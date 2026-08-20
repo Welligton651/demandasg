@@ -140,15 +140,11 @@
     </style>
 </head>
 <body class="h-full bg-gray-50">
- <body class="h-full bg-gray-50">
-
     <!-- TELA DE LOGIN COM GLASSMORPHISM -->
     <div id="telaLogin" class="fixed inset-0 z-[100] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed" style="background-color: #0f172a; background-image: url('https://i.ibb.co/xKTwCyNm/1784038809356-1.png');">
         
-        <!-- Overlay sutil escuro para dar contraste da imagem com o vidro -->
         <div class="absolute inset-0 bg-black/40"></div>
 
-        <!-- Container Glassmorphism -->
         <div class="relative z-10 w-full max-w-md p-8 mx-4 bg-white/10 backdrop-blur-lg rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] border border-white/20">
             <div class="text-center mb-8">
                 <div class="mx-auto w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 shadow-lg border border-white/20">
@@ -159,7 +155,6 @@
             </div>
 
             <div class="space-y-6">
-                <!-- Área do Administrador -->
                 <div class="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10 shadow-inner">
                     <h3 class="text-xs font-bold text-gray-300 uppercase tracking-widest text-center mb-2">Acesso Restrito</h3>
                     <div>
@@ -185,7 +180,6 @@
                     <span class="h-px w-full bg-white/20"></span>
                 </div>
 
-                <!-- Área do Visitante -->
                 <div>
                     <button onclick="entrarComoVisitante()" class="w-full py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center backdrop-blur-md">
                         <svg class="w-5 h-5 mr-2 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -200,7 +194,7 @@
     <div class="min-h-full" id="sistemaPrincipal" style="display: none;">
         <header class="gradient-bg shadow-lg">
             <div class="max-w-full mx-auto responsive-padding">
-                <div class="flex justify-between items-center py-2 sm:py-4 md:py-6 tv-sm:py-8 tv-md:py-10">
+                <div class="flex justify-between items-center py-2 sm:py-4 md:py-6 tv-sm:py-8 tv-md:py-10 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg class="h-8 w-8 tv-sm:h-12 tv-sm:w-12 tv-md:h-16 tv-md:w-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
@@ -253,10 +247,8 @@
         <main class="max-w-full mx-auto py-4 tv-sm:py-6 tv-md:py-8 px-4 sm:px-6 lg:px-8 tv-padding tablet-padding mobile-padding">
             <div id="dashboard-content" class="tab-content">
                 
-                <!-- Métricas do Dashboard com Redesign -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 md:gap-6 tv-sm:gap-8 tv-md:gap-10 mb-6 sm:mb-8">
                     
-                    <!-- Card Demandas Hoje -->
                     <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-blue-400/30 relative overflow-hidden group">
                         <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
                         <div class="flex items-center relative z-10">
@@ -274,7 +266,6 @@
                         </div>
                     </div>
 
-                    <!-- Card Concluídas -->
                     <div class="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-green-400/30 relative overflow-hidden group">
                         <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
                         <div class="flex items-center relative z-10">
@@ -292,7 +283,6 @@
                         </div>
                     </div>
 
-                    <!-- Card Pendentes -->
                     <div class="bg-gradient-to-br from-rose-500 to-red-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-red-400/30 relative overflow-hidden group">
                         <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
                         <div class="flex items-center relative z-10">
@@ -310,7 +300,6 @@
                         </div>
                     </div>
                     
-                    <!-- Card Total Geral -->
                     <div class="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-purple-400/30 relative overflow-hidden group">
                         <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
                         <div class="flex items-center relative z-10">
@@ -330,7 +319,6 @@
 
                 </div>
                 
-                <!-- Gráficos do Dashboard com Redesign -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transform transition-all duration-300 hover:shadow-md">
                         <div class="flex items-center mb-4">
@@ -352,7 +340,6 @@
                     </div>
                 </div>
 
-                <!-- Filtros e Relatórios -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 tv-sm:p-6 mb-6 sm:mb-8 border-l-4 border-l-purple-500">
                     <div class="flex flex-col space-y-5">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4">
@@ -368,7 +355,6 @@
                             </div>
                         </div>
                         
-                        <!-- Sessão de Filtros -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-50/80 p-4 rounded-lg border border-gray-200 shadow-inner">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Filtrar por Turno</label>
@@ -393,7 +379,6 @@
                             </div>
                         </div>
 
-                        <!-- Botões de Exportação -->
                         <div class="flex flex-wrap gap-3 justify-end pt-2">
                             <button onclick="gerarRelatorioHTML()" class="focusable flex items-center px-4 py-2.5 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm font-medium transition-all shadow-sm hover:shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -518,15 +503,22 @@
             <div id="calendario-content" class="tab-content hidden">
                 <div class="bg-white rounded-lg card-shadow overflow-hidden">
                     <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 px-4 tv-sm:px-6 tv-md:px-8 py-4 tv-sm:py-6 tv-md:py-8">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
                             <div>
                                 <h2 class="text-lg tv-sm:text-2xl tv-md:text-3xl tv-lg:text-4xl font-bold text-white tv-text-3xl">Calendário de Demandas</h2>
                                 <p class="text-slate-300 mt-1 tv-sm:mt-2 text-sm tv-sm:text-base tv-md:text-lg tv-text-lg">Visualização mensal das demandas programadas</p>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <button onclick="navegarMes(-1)" class="focusable px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
-                                <div class="text-center"><h3 id="mesAnoAtual" class="text-white font-bold text-lg"></h3></div>
-                                <button onclick="navegarMes(1)" class="focusable px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+                            <div class="flex items-center space-x-2 sm:space-x-4">
+                                <button onclick="gerarPDFCalendario()" class="focusable flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm shadow-sm" title="Exportar Calendário para PDF">
+                                    <svg class="w-4 h-4 sm:mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                                    <span class="hidden sm:inline">Exportar PDF</span>
+                                </button>
+                                
+                                <div class="flex items-center bg-slate-800 rounded-lg p-1 shadow-inner">
+                                    <button onclick="navegarMes(-1)" class="focusable px-2 sm:px-3 py-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
+                                    <div class="text-center min-w-[100px] sm:min-w-[140px]"><h3 id="mesAnoAtual" class="text-white font-bold text-sm sm:text-base"></h3></div>
+                                    <button onclick="navegarMes(1)" class="focusable px-2 sm:px-3 py-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -652,21 +644,17 @@
     </div>
 
     <script>
-        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyByll4JEy9rOjgkOWT4DCsKdJjmNVUosVI",
             authDomain: "controle-de-estoque-65575.firebaseapp.com",
             projectId: "controle-de-estoque-65575",
             storageBucket: "controle-de-estoque-65575.firebasestorage.app",
-            messagingSenderId: ".", // IMPORTANTE: Substitua pelo seu ID numérico real
-            appId: "1:.:web:61ec7900ba6c94370ee262", // IMPORTANTE: Substitua pelo seu App ID real
+            messagingSenderId: ".", 
+            appId: "1:.:web:61ec7900ba6c94370ee262", 
             measurementId: "G-ZY0FJG1Q34"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
-        
-        // Inicializar o serviço de Banco de Dados (Firestore)
         const db = firebase.firestore();
 
         db.enablePersistence()
@@ -678,22 +666,16 @@
                 }
             });
 
-        // Dados globais
         let demandas = [];
         let motoristas = [];
-        let usuarioLogado = ''; // Armazena quem está operando o sistema
+        let usuarioLogado = ''; 
         
-        // Variáveis dos Gráficos
         let chartExpedienteInstance = null;
         let chartSetoresInstance = null;
         
-        // Variáveis do calendário
         let mesAtual = new Date().getMonth();
         let anoAtual = new Date().getFullYear();
 
-        // Listeners em tempo real do Firebase
-        
-        // Listener para DEMANDAS
         db.collection('demandas').orderBy('dataCadastro', 'desc')
             .onSnapshot((querySnapshot) => {
                 demandas = []; 
@@ -705,7 +687,6 @@
                     demandas.push(demanda);
                 });
                 
-                // Atualiza todas as UIs que dependem das demandas
                 updateDashboard();
                 updateTimeline();
                 updateEscala();
@@ -715,7 +696,6 @@
                 mostrarMensagem('Erro ao carregar demandas do servidor', 'error');
             });
 
-        // Listener para MOTORISTAS
         db.collection('motoristas').orderBy('nome', 'asc')
             .onSnapshot((querySnapshot) => {
                 motoristas = [];
@@ -727,7 +707,6 @@
                     motoristas.push(motorista);
                 });
                 
-                // Atualiza todas as UIs que dependem dos motoristas
                 updateListaMotoristas();
                 updateSelectMotoristas();
             }, (error) => {
@@ -735,18 +714,15 @@
                 mostrarMensagem('Erro ao carregar motoristas do servidor', 'error');
             });
 
-        // Função auxiliar para criar data no fuso horário de Brasília
         function criarDataBrasilia(dataString) {
             const [ano, mes, dia] = dataString.split('-');
             return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
         }
 
-        // Função auxiliar para formatar data no padrão brasileiro
         function formatarDataBrasil(dataString) {
             return criarDataBrasilia(dataString).toLocaleDateString('pt-BR');
         }
 
-        // Função auxiliar para formatar data completa no padrão brasileiro
         function formatarDataCompletaBrasil(dataString) {
             return criarDataBrasilia(dataString).toLocaleDateString('pt-BR', {
                 weekday: 'long',
@@ -768,6 +744,10 @@
             
             // Inicializar upload de foto
             initializePhotoUpload();
+            
+            // Listeners para verificar o limite de demandas por horário
+            document.getElementById('dataDemanda').addEventListener('change', verificarLimiteDemandas);
+            document.getElementById('horario').addEventListener('change', verificarLimiteDemandas);
         });
 
         // Atualizar data atual
@@ -783,7 +763,6 @@
                 agora.toLocaleDateString('pt-BR', opcoes);
         }
 
-        // Navegação entre abas
         function showTab(tabName) {
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.add('hidden'));
@@ -813,7 +792,6 @@
             }
         }
 
-        // Cadastrar nova demanda
         document.getElementById('demandaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -831,7 +809,7 @@
                 observacoes: formData.get('observacoes'),
                 status: 'Pendente',
                 dataCadastro: new Date().toISOString(),
-                cadastradoPor: usuarioLogado // <--- Gravando o usuário responsável pelo cadastro
+                cadastradoPor: usuarioLogado
             };
             
             try {
@@ -889,35 +867,27 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
         }
 
-        // ==========================================
-        // LÓGICA DE FILTROS PARA RELATÓRIO
-        // ==========================================
         function atualizarFiltrosRelatorio() {
             const concluidas = demandas.filter(d => d.status === 'Concluída');
             
-            // Obter valores únicos
             const setores = [...new Set(concluidas.map(d => d.setor))].filter(Boolean).sort();
             const solicitantes = [...new Set(concluidas.map(d => d.solicitante))].filter(Boolean).sort();
             
             const selectSetor = document.getElementById('filtroSetor');
             const selectSolicitante = document.getElementById('filtroSolicitante');
             
-            // Salvar seleções atuais para não perder ao atualizar
             const valSetor = selectSetor.value;
             const valSolicitante = selectSolicitante.value;
             
-            // Preencher Selects
             selectSetor.innerHTML = '<option value="">Todos os Setores</option>' + 
                 setores.map(s => `<option value="${s}">${s}</option>`).join('');
                 
             selectSolicitante.innerHTML = '<option value="">Todos os Solicitantes</option>' + 
                 solicitantes.map(s => `<option value="${s}">${s}</option>`).join('');
             
-            // Restaurar valores
             if(setores.includes(valSetor)) selectSetor.value = valSetor;
             if(solicitantes.includes(valSolicitante)) selectSolicitante.value = valSolicitante;
 
-            // Atualiza o contador de prontas para exportar
             atualizarContadorFiltro();
         }
 
@@ -935,31 +905,26 @@
             return demandas.filter(d => {
                 if (d.status !== 'Concluída') return false;
                 
-                // Filtros textuais exatos
                 if (setor && d.setor !== setor) return false;
                 if (solicitante && d.solicitante !== solicitante) return false;
                 
-                // Filtro por Turno
                 if (turno) {
                     const hora = parseInt(d.horario.split(':')[0]);
                     if (turno === 'manha' && (hora < 6 || hora >= 12)) return false;
                     if (turno === 'tarde' && (hora < 12 || hora >= 18)) return false;
-                    if (turno === 'noite' && (hora >= 6 && hora < 18)) return false; // 18 as 05:59 (inverso)
+                    if (turno === 'noite' && (hora >= 6 && hora < 18)) return false; 
                 }
                 
                 return true;
             }).sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro));
         }
         
-        // ==========================================
-        // GRÁFICOS DO DASHBOARD
-        // ==========================================
         function renderDashboardCharts() {
             let manha = 0, tarde = 0;
             demandas.forEach(d => {
                 const hora = parseInt(d.horario.split(':')[0]);
                 if (hora >= 6 && hora < 12) manha++;
-                else tarde++; // Contando tarde + noite no mesmo bloco pra simplificar visual
+                else tarde++; 
             });
 
             const ctxExp = document.getElementById('chartExpediente');
@@ -1038,7 +1003,6 @@
                 totalHistoricoEl.textContent = demandas.filter(d => d.status === 'Concluída').length;
             }
             
-            // Atualiza os filtros dropdown e os gráficos
             atualizarFiltrosRelatorio();
             renderDashboardCharts();
 
@@ -1078,7 +1042,6 @@
                                 </div>
                             ` : ''}
                             
-                            <!-- Exibição de rastreio de usuário -->
                             <div class="mt-2 text-[11px] text-indigo-100/80 font-medium border-t border-white/10 pt-2 flex items-center flex-wrap gap-2">
                                 <span>👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}</span>
                                 ${demanda.concluidoPor ? `<span class="bg-black/20 px-1.5 py-0.5 rounded text-[10px]">✅ Concluído por: ${demanda.concluidoPor}</span>` : ''}
@@ -1461,7 +1424,6 @@
             try {
                 const updateData = { status: novoStatus };
                 
-                // Se a demanda foi concluída, registra quem fez a baixa
                 if (novoStatus === 'Concluída') {
                     updateData.concluidoPor = usuarioLogado;
                 }
@@ -1689,6 +1651,76 @@
             document.getElementById('motoristaForm').reset();
             document.getElementById('previewContainer').classList.add('hidden');
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // VERIFICAÇÃO DE LIMITE DE DEMANDAS
+        // ==========================================
+        function verificarLimiteDemandas() {
+            const dataSelecionada = document.getElementById('dataDemanda').value;
+            const horarioSelecionado = document.getElementById('horario').value;
+
+            // Só verifica se ambos os campos estiverem preenchidos
+            if (!dataSelecionada || !horarioSelecionado) return;
+
+            // Conta quantas demandas ativas existem para esse dia e horário
+            const demandasNesteHorario = demandas.filter(d => 
+                d.dataDemanda === dataSelecionada && 
+                d.horario === horarioSelecionado && 
+                d.status !== 'Cancelada pelo setor solicitante'
+            ).length;
+
+            // Se atingir 3 demandas, exibe o aviso
+            if (demandasNesteHorario >= 3) {
+                mostrarAvisoLimiteDemandas(demandasNesteHorario);
+            }
+        }
+
+        function mostrarAvisoLimiteDemandas(qtdDemandas) {
+            // Remove aviso existente, se houver, para não acumular pop-ups na tela
+            const avisoExistente = document.getElementById('avisoLimitePopUp');
+            if (avisoExistente) avisoExistente.remove();
+
+            const aviso = document.createElement('div');
+            aviso.id = 'avisoLimitePopUp';
+            aviso.className = 'fixed top-6 right-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-5 py-4 rounded-xl shadow-2xl z-[200] transform transition-all duration-300 flex items-start max-w-sm border-l-4 border-yellow-700 translate-x-full';
+            
+            aviso.innerHTML = `
+                <div class="mr-3 mt-0.5 animate-pulse">
+                    <svg class="w-6 h-6 text-yellow-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-sm text-white tracking-wide">Atenção: Horário Sobrecarregado</h4>
+                    <p class="text-xs mt-1 text-yellow-50 leading-relaxed">Já existem <strong>${qtdDemandas} demandas</strong> para este mesmo dia e horário. Agendar uma próxima demanda será arriscado.</p>
+                </div>
+                <button onclick="fecharAvisoLimite(this.parentElement)" class="ml-4 text-yellow-200 hover:text-white transition-colors focus:outline-none bg-black/10 hover:bg-black/20 rounded-full p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            
+            document.body.appendChild(aviso);
+
+            // Animação de entrada
+            setTimeout(() => {
+                aviso.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto-remover após 7 segundos
+            setTimeout(() => {
+                fecharAvisoLimite(aviso);
+            }, 7000);
+        }
+
+        function fecharAvisoLimite(elemento) {
+            if (elemento) {
+                elemento.classList.add('translate-x-full');
+                elemento.style.opacity = '0';
+                setTimeout(() => {
+                    if (elemento.parentNode) {
+                        elemento.remove();
+                    }
+                }, 300);
+            }
         }
 
         function updateListaMotoristas() {
@@ -1989,10 +2021,6 @@
             document.body.appendChild(modal);
         }
 
-        // ==========================================
-        // GERAÇÃO DOS RELATÓRIOS (HTML/PDF/EXCEL)
-        // ==========================================
-
         function gerarTabelaRelatorio() {
             const concluidas = getDemandasConcluidas();
             let tbody = '';
@@ -2144,11 +2172,136 @@
             janela.document.close();
         }
 
-        // ==========================================
-        // LÓGICA DE LOGIN E CONTROLE DE ACESSO
-        // ==========================================
+        function gerarPDFCalendario() {
+            const janela = window.open('', '_blank');
+            const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = `Calendário de Demandas - ${nomesMeses[mesAtual]} ${anoAtual}`;
+            
+            const primeiroDia = new Date(anoAtual, mesAtual, 1);
+            const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+            const diasNoMes = ultimoDia.getDate();
+            const diaSemanaInicio = primeiroDia.getDay();
+            
+            let htmlGrid = '';
+            
+            const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            htmlGrid += '<tr style="background-color: #f3f4f6;">';
+            diasSemana.forEach(dia => {
+                htmlGrid += `<th style="padding: 10px; border: 1px solid #d1d5db; text-align: center; width: 14.28%; color: #374151; font-weight: bold; text-transform: uppercase; font-size: 14px;">${dia}</th>`;
+            });
+            htmlGrid += '</tr><tr>';
+            
+            let diaAtualNaSemana = 0;
+            
+            for (let i = 0; i < diaSemanaInicio; i++) {
+                htmlGrid += '<td style="padding: 10px; border: 1px solid #d1d5db; background-color: #f9fafb; min-height: 120px; vertical-align: top;"></td>';
+                diaAtualNaSemana++;
+            }
+            
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                if (diaAtualNaSemana === 7) {
+                    htmlGrid += '</tr><tr>';
+                    diaAtualNaSemana = 0;
+                }
+                
+                const dataAtual = new Date(anoAtual, mesAtual, dia);
+                const dataString = dataAtual.toISOString().split('T')[0];
+                const demandasDoDia = demandas.filter(d => d.dataDemanda === dataString).sort((a, b) => a.horario.localeCompare(b.horario));
+                
+                let demandasHtml = '';
+                demandasDoDia.forEach(d => {
+                    const bgColor = d.status === 'Concluída' ? '#dcfce7' : (d.status === 'Cancelada pelo setor solicitante' ? '#fee2e2' : '#eff6ff');
+                    const borderColor = d.status === 'Concluída' ? '#22c55e' : (d.status === 'Cancelada pelo setor solicitante' ? '#ef4444' : '#3b82f6');
+                    
+                    demandasHtml += `
+                        <div style="font-size: 10px; margin-top: 4px; padding: 4px; background-color: ${bgColor}; border-left: 3px solid ${borderColor}; border-radius: 3px; overflow: hidden; line-height: 1.3; break-inside: avoid;">
+                            <div style="font-weight: bold; color: #111827;">${d.horario} - ${d.solicitante}</div>
+                            <div style="color: #4b5563;">Dest: ${d.destino}</div>
+                            ${d.nomeMotorista ? `<div style="color: #4b5563; font-style: italic;">Mot: ${d.nomeMotorista}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                htmlGrid += `
+                    <td style="padding: 8px; border: 1px solid #d1d5db; vertical-align: top; height: 120px; width: 14.28%;">
+                        <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #1f2937;">${dia}</div>
+                        ${demandasHtml}
+                    </td>
+                `;
+                diaAtualNaSemana++;
+            }
+            
+            while (diaAtualNaSemana < 7) {
+                htmlGrid += '<td style="padding: 10px; border: 1px solid #d1d5db; background-color: #f9fafb; min-height: 120px; vertical-align: top;"></td>';
+                diaAtualNaSemana++;
+            }
+            htmlGrid += '</tr>';
 
-        let nivelAcesso = null; // 'admin' ou 'visitante'
+            const estruturaHtml = `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${titulo}</title>
+                    <style>
+                        body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; padding: 20px; color: #374151; background-color: #f3f4f6;}
+                        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+                        h1 { color: #1f2937; margin: 0; font-size: 24px; text-transform: uppercase; }
+                        h2 { color: #4b5563; margin: 5px 0 0 0; font-size: 18px; font-weight: normal; }
+                        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        @media print {
+                            .no-print { display: none !important; }
+                            body { padding: 0; background-color: white; }
+                            .container { box-shadow: none; max-width: 100%; padding: 0; }
+                            @page { size: landscape; margin: 1cm; }
+                            table { page-break-inside: auto; }
+                            tr { page-break-inside: avoid; page-break-after: auto; }
+                        }
+                        .btn { display: inline-flex; align-items: center; padding: 10px 20px; background-color: #dc2626; color: white; text-decoration: none; border-radius: 6px; cursor: pointer; border: none; font-size: 14px; font-weight: bold; transition: background-color 0.2s;}
+                        .btn:hover { background-color: #b91c1c; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <div>
+                                <h1>SEMCAS - Sistema de Demandas</h1>
+                                <h2>${titulo}</h2>
+                            </div>
+                            <div class="no-print">
+                                <button class="btn" onclick="window.print()">
+                                    <svg style="width: 18px; height: 18px; margin-right: 8px;" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                                    Imprimir / Salvar PDF
+                                </button>
+                                <button class="btn" style="background-color: #6b7280; margin-left: 10px;" onclick="window.close()">Fechar</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px; display: flex; gap: 15px; font-size: 12px;" class="no-print">
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #eff6ff; border-left: 3px solid #3b82f6; margin-right: 5px;"></span> Pendente / Em Andamento</span>
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #dcfce7; border-left: 3px solid #22c55e; margin-right: 5px;"></span> Concluída</span>
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #fee2e2; border-left: 3px solid #ef4444; margin-right: 5px;"></span> Cancelada</span>
+                        </div>
+
+                        <table>
+                            ${htmlGrid}
+                        </table>
+                        <div style="margin-top: 20px; font-size: 12px; color: #6b7280; text-align: center;">
+                            Gerado em: ${new Date().toLocaleString('pt-BR')}
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            janela.document.write(estruturaHtml);
+            janela.document.close();
+            
+            setTimeout(() => { janela.print(); }, 1000);
+        }
+
+        let nivelAcesso = null; 
 
         function entrarComoAdmin() {
             const usuario = document.getElementById('loginUsuario').value;
@@ -2159,15 +2312,12 @@
                 return;
             }
 
-            // O truque da segurança: btoa() transforma a senha digitada em Base64
-            // JOYCE (1245) = MTI0NQ== | WELLIGTON (0205) = MDIwNQ== | MARCIO (2026) = MjAyNg==
             const credenciaisOcultas = {
                 'JOYCE': 'MTI0NQ==',
                 'WELLIGTON': 'MDIwNQ==',
                 'MARCIO DAVID': 'MjAyNg=='
             };
 
-            // Compara o Base64 da senha digitada com a chave salva no script
             if (btoa(senha) === credenciaisOcultas[usuario]) {
                 nivelAcesso = 'admin';
                 usuarioLogado = usuario;
@@ -2184,7 +2334,6 @@
         }
 
         function iniciarSistema() {
-            // Personaliza a mensagem do cabeçalho
             const headerGreeting = document.getElementById('headerGreeting');
             if (headerGreeting) {
                 headerGreeting.textContent = nivelAcesso === 'admin' 
@@ -2192,51 +2341,42 @@
                     : 'Oi, Visitante | ';
             }
 
-            // Esconde o Lobby e mostra o painel principal
             document.getElementById('telaLogin').style.display = 'none';
             const mainApp = document.querySelector('.min-h-full');
             if(mainApp) mainApp.style.display = 'block';
 
-            // Se for visitante, aplica os bloqueios
             if (nivelAcesso === 'visitante') {
                 aplicarRestricoesVisitante();
             }
         }
 
         function aplicarRestricoesVisitante() {
-            // 1. Oculta abas inteiras que são exclusivas de administração
             const tabCadastro = document.getElementById('tab-cadastro');
             const tabMotoristas = document.getElementById('tab-motoristas');
             if(tabCadastro) tabCadastro.style.display = 'none';
             if(tabMotoristas) tabMotoristas.style.display = 'none';
 
-            // 2. Desabilita inputs de status (selects da tabela)
             const selectsStatus = document.querySelectorAll('select[onchange*="alterarStatus"]');
             selectsStatus.forEach(select => {
                 select.disabled = true;
                 select.classList.add('bg-gray-100', 'cursor-not-allowed', 'opacity-70');
             });
 
-            // 3. Oculta botões de excluir e editar dinâmicos
             const botoesAcao = document.querySelectorAll('button[onclick*="editarDemanda"], button[onclick*="excluirDemanda"], button[title*="Excluir"], button[title*="Editar"]');
             botoesAcao.forEach(btn => btn.style.display = 'none');
 
-            // 4. Feedback visual no cabeçalho
             const headerTitle = document.querySelector('.text-indigo-100');
             if (headerTitle && !document.getElementById('tagVisitante')) {
                 headerTitle.innerHTML += ' <span id="tagVisitante" class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900 shadow-sm">Modo Visitante</span>';
             }
         }
 
-        // Como o Firebase carrega os dados assincronamente e reconstrói as tabelas,
-        // precisamos garantir que as restrições sejam reaplicadas a cada atualização da tela.
         const observerAcesso = new MutationObserver((mutations) => {
             if (nivelAcesso === 'visitante') {
                 aplicarRestricoesVisitante();
             }
         });
 
-        // Começa a observar mudanças no main (onde as tabelas são renderizadas)
         const mainElement = document.querySelector('main');
         if (mainElement) {
             observerAcesso.observe(mainElement, { childList: true, subtree: true });
