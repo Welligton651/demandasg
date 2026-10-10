@@ -1,0 +1,22 @@
+{
+  "short_name": "TransportHub",
+  "name": "TransportHub - SEMCAS",
+  "description": "Sistema de Gerenciamento de Demandas e Transporte",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1f2937",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/xKTwCyNm/1784038809356-1.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.ibb.co/xKTwCyNm/1784038809356-1.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
