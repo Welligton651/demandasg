@@ -1,5 +1,5 @@
-let usuarioLogado = '';
-let nivelAcesso = null;
+var usuarioLogado = '';
+var nivelAcesso = null;
 
 function entrarComoAdmin() {
     const usuario = document.getElementById('loginUsuario').value;
@@ -34,7 +34,9 @@ function entrarComoVisitante() {
     nivelAcesso = 'visitante';
     usuarioLogado = nomeInput;
 
-    iniciarSessaoVisitante(nomeInput);
+    if (typeof iniciarSessaoVisitante === 'function') {
+        iniciarSessaoVisitante(nomeInput);
+    }
     iniciarSistema();
 }
 
@@ -51,10 +53,14 @@ function iniciarSistema() {
     if (mainApp) mainApp.style.display = 'block';
 
     const tabAuditoria = document.getElementById('tab-auditoria');
+    const tabFolgas = document.getElementById('tab-folgas');
+    
     if (nivelAcesso === 'admin' && (usuarioLogado === 'WELLIGTON' || usuarioLogado === 'MARCIO DAVID' || usuarioLogado === 'JOYCE')) {
         if (tabAuditoria) tabAuditoria.style.display = 'inline-flex';
+        if (tabFolgas) tabFolgas.style.display = 'inline-flex';
     } else {
         if (tabAuditoria) tabAuditoria.style.display = 'none';
+        if (tabFolgas) tabFolgas.style.display = 'none';
     }
 
     if (nivelAcesso === 'visitante') {

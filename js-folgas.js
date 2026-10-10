@@ -1,4 +1,4 @@
-let historicoFolgas = [];
+var historicoFolgas = [];
 
 // Escuta a coleção "folgas" em tempo real no Firebase
 db.collection('folgas').orderBy('dataCadastro', 'desc')
@@ -21,7 +21,7 @@ function renderizarCardsFolgas() {
     const container = document.getElementById('gridFolgas');
     if (!container) return;
 
-    if (!motoristas || motoristas.length === 0) {
+    if (typeof motoristas === 'undefined' || motoristas.length === 0) {
         container.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">Nenhum motorista cadastrado ainda.</p>';
         return;
     }
@@ -67,7 +67,7 @@ function renderizarCardsFolgas() {
                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Última Movimentação</h4>
                     ${ultimoEvento ? `
                         <div class="text-sm bg-gray-50 rounded p-2 border-l-2 ${ultimoEvento.tipo === 'ganho' ? 'border-emerald-500' : 'border-orange-500'}">
-                            <div class="font-medium text-gray-800">${formatarDataBrasil(ultimoEvento.dataEvento)} - ${ultimoEvento.tipo === 'ganho' ? '+ Ganhou' : '- Usou'}${ultimoEvento.quantidade} dia(s)</div>
+                            <div class="font-medium text-gray-800">${typeof formatarDataBrasil === 'function' ? formatarDataBrasil(ultimoEvento.dataEvento) : ultimoEvento.dataEvento} - ${ultimoEvento.tipo === 'ganho' ? '+ Ganhou' : '- Usou'}${ultimoEvento.quantidade} dia(s)</div>
                             <div class="text-xs text-gray-500 mt-1 line-clamp-1" title="${ultimoEvento.motivo}">${ultimoEvento.motivo}</div>
                         </div>
                     ` : `<p class="text-sm text-gray-400 italic">Nenhuma folga registrada.</p>`}
@@ -129,7 +129,8 @@ async function salvarFolga() {
     const motivo = document.getElementById('folgaMotivo').value;
 
     if (!dataEvento || !quantidade || !motivo) {
-        mostrarMensagem('Preencha todos os campos obrigatórios!', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Preencha todos os campos obrigatórios!', 'error');
+        else alert('Preencha todos os campos obrigatórios!');
         return;
     }
 
@@ -140,7 +141,7 @@ async function salvarFolga() {
         quantidade: Number(quantidade),
         motivo: motivo,
         dataCadastro: new Date().toISOString(),
-        cadastradoPor: usuarioLogado
+        cadastradoPor: typeof usuarioLogado !== 'undefined' ? usuarioLogado : 'Desconhecido'
     };
 
     try {
@@ -150,13 +151,13 @@ async function salvarFolga() {
 
         await db.collection('folgas').add(registro);
         
-        mostrarMensagem('Folga registrada com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Folga registrada com sucesso!', 'success');
         fecharModalFolga();
         
         btn.disabled = false;
     } catch (error) {
         console.error("Erro ao salvar folga: ", error);
-        mostrarMensagem('Erro ao salvar registro.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao salvar registro.', 'error');
         document.getElementById('btnSalvarFolga').disabled = false;
     }
 }

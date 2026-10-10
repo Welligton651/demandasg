@@ -1,5 +1,5 @@
-let mesAtual = new Date().getMonth();
-let anoAtual = new Date().getFullYear();
+var mesAtual = new Date().getMonth();
+var anoAtual = new Date().getFullYear();
 
 function criarDataBrasilia(dataString) {
     const [ano, mes, dia] = dataString.split('-');
@@ -64,7 +64,10 @@ function updateCurrentDate() {
 }
 
 function showTab(tabName) {
-    registrarNavegacaoVisitante(tabName);
+    // Proteção para evitar erro caso a auditoria não carregue a tempo
+    if (typeof registrarNavegacaoVisitante === 'function') {
+        registrarNavegacaoVisitante(tabName);
+    }
 
     const contents = document.querySelectorAll('.tab-content');
     contents.forEach(content => content.classList.add('hidden'));
@@ -84,18 +87,18 @@ function showTab(tabName) {
         activeButton.classList.remove('border-transparent', 'text-gray-500');
     }
 
-    if (tabName === 'dashboard') updateDashboard();
-    else if (tabName === 'timeline') updateTimeline();
-    else if (tabName === 'motoristas') updateListaMotoristas();
-    else if (tabName === 'escala') updateEscala();
-    else if (tabName === 'calendario') updateCalendario();
-    else if (tabName === 'auditoria') carregarAuditoria();
-    else if (tabName === 'folgas') renderizarCardsFolgas();
+    if (tabName === 'dashboard' && typeof updateDashboard === 'function') updateDashboard();
+    else if (tabName === 'timeline' && typeof updateTimeline === 'function') updateTimeline();
+    else if (tabName === 'motoristas' && typeof updateListaMotoristas === 'function') updateListaMotoristas();
+    else if (tabName === 'escala' && typeof updateEscala === 'function') updateEscala();
+    else if (tabName === 'calendario' && typeof updateCalendario === 'function') updateCalendario();
+    else if (tabName === 'auditoria' && typeof carregarAuditoria === 'function') carregarAuditoria();
+    else if (tabName === 'folgas' && typeof renderizarCardsFolgas === 'function') renderizarCardsFolgas();
 }
 
 function updateEscala() {
     const tbody = document.getElementById('escalaTableBody');
-    if (!tbody) return;
+    if (!tbody || typeof demandas === 'undefined') return;
 
     const demandasOrdenadas = demandas
         .filter(demanda => isDataNaSemanaAtual(demanda.dataDemanda) &&
@@ -115,7 +118,7 @@ function updateEscala() {
     }
 
     tbody.innerHTML = demandasOrdenadas.map((demanda, index) => {
-        const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+        const motorista = (typeof motoristas !== 'undefined') ? motoristas.find(m => m.nome === demanda.nomeMotorista) : null;
         const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
         return `
             <tr class="hover:bg-gray-50 transition-colors">
@@ -140,7 +143,8 @@ function updateEscala() {
 
 function updateTimeline() {
     const container = document.getElementById('timelineContainer');
-    if (!container) return;
+    if (!container || typeof demandas === 'undefined') return;
+    
     const demandasSemana = demandas.filter(d => isDataNaSemanaAtual(d.dataDemanda) && d.status !== 'Concluída' && d.status !== 'Cancelada pelo setor solicitante');
 
     if (demandasSemana.length === 0) {
@@ -195,11 +199,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dataDemandaInput) {
         dataDemandaInput.min = hoje;
         dataDemandaInput.value = hoje;
-        dataDemandaInput.addEventListener('change', verificarLimiteDemandas);
+        
+        if (typeof verificarLimiteDemandas === 'function') {
+            dataDemandaInput.addEventListener('change', verificarLimiteDemandas);
+        }
     }
 
-    document.getElementById('horario')?.addEventListener('change', verificarLimiteDemandas);
-    if(typeof initializePhotoUpload === 'function') {
+    const horarioInput = document.getElementById('horario');
+    if (horarioInput && typeof verificarLimiteDemandas === 'function') {
+        horarioInput.addEventListener('change', verificarLimiteDemandas);
+    }
+    
+    if (typeof initializePhotoUpload === 'function') {
         initializePhotoUpload();
     }
 });
