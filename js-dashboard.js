@@ -1,8 +1,10 @@
-let chartExpedienteInstance = null;
-let chartSetoresInstance = null;
+var chartExpedienteInstance = null;
+var chartSetoresInstance = null;
 
 function renderDashboardCharts() {
-    let manha = 0, tarde = 0;
+    if (typeof demandas === 'undefined') return;
+
+    var manha = 0, tarde = 0;
     demandas.forEach(d => {
         const hora = parseInt(d.horario.split(':')[0]);
         if (hora >= 6 && hora < 12) manha++;
@@ -73,19 +75,26 @@ function renderDashboardCharts() {
 }
 
 function updateDashboard() {
+    if (typeof demandas === 'undefined') return;
+
     const hoje = new Date().toISOString().split('T')[0];
     const demandasHoje = demandas.filter(d => d.dataDemanda === hoje);
 
-    document.getElementById('totalDemandas').textContent = demandasHoje.length;
-    document.getElementById('concluidas').textContent = demandasHoje.filter(d => d.status === 'Concluída').length;
-    document.getElementById('pendentes').textContent = demandasHoje.filter(d => d.status === 'Pendente').length;
+    var elTotal = document.getElementById('totalDemandas');
+    if(elTotal) elTotal.textContent = demandasHoje.length;
+    
+    var elConc = document.getElementById('concluidas');
+    if(elConc) elConc.textContent = demandasHoje.filter(d => d.status === 'Concluída').length;
+    
+    var elPend = document.getElementById('pendentes');
+    if(elPend) elPend.textContent = demandasHoje.filter(d => d.status === 'Pendente').length;
 
     const totalHistoricoEl = document.getElementById('totalHistorico');
     if (totalHistoricoEl) {
         totalHistoricoEl.textContent = demandas.filter(d => d.status === 'Concluída').length;
     }
 
-    atualizarFiltrosRelatorio();
+    if (typeof atualizarFiltrosRelatorio === 'function') atualizarFiltrosRelatorio();
     renderDashboardCharts();
 
     const container = document.getElementById('demandasRecentes');
@@ -95,8 +104,10 @@ function updateDashboard() {
     } else {
         const recentes = demandas.slice(-5).reverse();
         container.innerHTML = recentes.map(demanda => {
-            const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
-            const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+            const motorista = (typeof motoristas !== 'undefined') ? motoristas.find(m => m.nome === demanda.nomeMotorista) : null;
+            let dataFormatada = demanda.dataDemanda;
+            if(typeof formatarDataBrasil === 'function') dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+            
             return `
             <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-md text-white hover:shadow-lg transition-shadow border border-white/10">
                 <div class="flex-1">

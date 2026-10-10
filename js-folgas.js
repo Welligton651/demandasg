@@ -26,15 +26,15 @@ function renderizarCardsFolgas() {
         return;
     }
 
-    let html = '';
+    var html = '';
 
     motoristas.forEach(motorista => {
         // Filtra o histórico desse motorista específico
         const folgasDoMotorista = historicoFolgas.filter(f => f.motorista === motorista.nome);
         
         // Calcula o Saldo (Ganhos - Usos)
-        let totalGanhos = 0;
-        let totalUsos = 0;
+        var totalGanhos = 0;
+        var totalUsos = 0;
         
         folgasDoMotorista.forEach(f => {
             if (f.tipo === 'ganho') totalGanhos += Number(f.quantidade);

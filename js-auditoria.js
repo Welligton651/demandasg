@@ -12,13 +12,13 @@ async function obterIP() {
 }
 
 function extrairInfoNavegador(userAgent) {
-    let browser = "Desconhecido";
+    var browser = "Desconhecido";
     if (userAgent.includes("Firefox")) browser = "Firefox";
     else if (userAgent.includes("Edg")) browser = "Edge";
     else if (userAgent.includes("Chrome")) browser = "Chrome";
     else if (userAgent.includes("Safari")) browser = "Safari";
 
-    let os = "Desconhecido";
+    var os = "Desconhecido";
     if (userAgent.includes("Win")) os = "Windows";
     else if (userAgent.includes("Mac")) os = "MacOS";
     else if (userAgent.includes("Linux")) os = "Linux";
@@ -33,7 +33,7 @@ async function iniciarSessaoVisitante(nomeVisitante) {
     const dispositivo = extrairInfoNavegador(navigator.userAgent);
     sessaoVisitanteId = db.collection('auditoria_visitantes').doc().id;
 
-    let historicoInicial = [`[${new Date().toLocaleTimeString('pt-BR')}] Login efetuado`];
+    var historicoInicial = [`[${new Date().toLocaleTimeString('pt-BR')}] Login efetuado`];
 
     if (window.historicoPendente && window.historicoPendente.length > 0) {
         historicoInicial = historicoInicial.concat(window.historicoPendente);
@@ -85,7 +85,7 @@ function carregarAuditoria() {
                 return;
             }
 
-            let html = '';
+            var html = '';
             querySnapshot.forEach(doc => {
                 const data = doc.data();
                 const dataObj = new Date(data.dataInicio);

@@ -1,4 +1,4 @@
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey: "AIzaSyByll4JEy9rOjgkOWT4DCsKdJjmNVUosVI",
     authDomain: "controle-de-estoque-65575.firebaseapp.com",
     projectId: "controle-de-estoque-65575",
@@ -9,7 +9,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+var db = firebase.firestore();
 
 db.enablePersistence().catch((err) => {
     if (err.code === 'failed-precondition') {

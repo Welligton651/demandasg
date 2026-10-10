@@ -2,15 +2,15 @@ var usuarioLogado = '';
 var nivelAcesso = null;
 
 function entrarComoAdmin() {
-    const usuario = document.getElementById('loginUsuario').value;
-    const senha = document.getElementById('loginSenha').value;
+    var usuario = document.getElementById('loginUsuario').value;
+    var senha = document.getElementById('loginSenha').value;
 
     if (!usuario) {
         alert("Por favor, selecione um usuário.");
         return;
     }
 
-    const credenciaisOcultas = {
+    var credenciaisOcultas = {
         'JOYCE': 'MTI0NQ==',
         'WELLIGTON': 'MDIwNQ==',
         'MARCIO DAVID': 'MjAyNg=='
@@ -26,7 +26,7 @@ function entrarComoAdmin() {
 }
 
 function entrarComoVisitante() {
-    let nomeInput = document.getElementById('nomeVisitante').value.trim();
+    var nomeInput = document.getElementById('nomeVisitante').value.trim();
     if (!nomeInput) {
         nomeInput = 'Visitante Anônimo';
     }
@@ -41,7 +41,7 @@ function entrarComoVisitante() {
 }
 
 function iniciarSistema() {
-    const headerGreeting = document.getElementById('headerGreeting');
+    var headerGreeting = document.getElementById('headerGreeting');
     if (headerGreeting) {
         headerGreeting.textContent = nivelAcesso === 'admin' 
             ? `Oi, ${usuarioLogado.split(' ')[0]} | ` 
@@ -49,11 +49,11 @@ function iniciarSistema() {
     }
 
     document.getElementById('telaLogin').style.display = 'none';
-    const mainApp = document.getElementById('sistemaPrincipal');
+    var mainApp = document.getElementById('sistemaPrincipal');
     if (mainApp) mainApp.style.display = 'block';
 
-    const tabAuditoria = document.getElementById('tab-auditoria');
-    const tabFolgas = document.getElementById('tab-folgas');
+    var tabAuditoria = document.getElementById('tab-auditoria');
+    var tabFolgas = document.getElementById('tab-folgas');
     
     if (nivelAcesso === 'admin' && (usuarioLogado === 'WELLIGTON' || usuarioLogado === 'MARCIO DAVID' || usuarioLogado === 'JOYCE')) {
         if (tabAuditoria) tabAuditoria.style.display = 'inline-flex';
@@ -69,33 +69,33 @@ function iniciarSistema() {
 }
 
 function aplicarRestricoesVisitante() {
-    const tabCadastro = document.getElementById('tab-cadastro');
-    const tabMotoristas = document.getElementById('tab-motoristas');
+    var tabCadastro = document.getElementById('tab-cadastro');
+    var tabMotoristas = document.getElementById('tab-motoristas');
     if (tabCadastro) tabCadastro.style.display = 'none';
     if (tabMotoristas) tabMotoristas.style.display = 'none';
 
-    const selectsStatus = document.querySelectorAll('select[onchange*="alterarStatus"]');
+    var selectsStatus = document.querySelectorAll('select[onchange*="alterarStatus"]');
     selectsStatus.forEach(select => {
         select.disabled = true;
         select.classList.add('bg-gray-100', 'cursor-not-allowed', 'opacity-70');
     });
 
-    const botoesAcao = document.querySelectorAll('button[onclick*="editarDemanda"], button[onclick*="excluirDemanda"], button[title*="Excluir"], button[title*="Editar"]');
+    var botoesAcao = document.querySelectorAll('button[onclick*="editarDemanda"], button[onclick*="excluirDemanda"], button[title*="Excluir"], button[title*="Editar"]');
     botoesAcao.forEach(btn => btn.style.display = 'none');
 
-    const headerTitle = document.querySelector('.text-indigo-100');
+    var headerTitle = document.querySelector('.text-indigo-100');
     if (headerTitle && !document.getElementById('tagVisitante')) {
         headerTitle.innerHTML += ' <span id="tagVisitante" class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900 shadow-sm">Modo Visitante</span>';
     }
 }
 
-const observerAcesso = new MutationObserver(() => {
+var observerAcesso = new MutationObserver(() => {
     if (nivelAcesso === 'visitante') {
         aplicarRestricoesVisitante();
     }
 });
 
-const mainElement = document.querySelector('main');
+var mainElement = document.querySelector('main');
 if (mainElement) {
     observerAcesso.observe(mainElement, { childList: true, subtree: true });
 }

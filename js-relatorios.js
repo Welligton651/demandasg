@@ -1,4 +1,6 @@
 function atualizarFiltrosRelatorio() {
+    if (typeof demandas === 'undefined') return;
+
     const concluidas = demandas.filter(d => d.status === 'Concluída');
     const setores = [...new Set(concluidas.map(d => d.setor))].filter(Boolean).sort();
     const solicitantes = [...new Set(concluidas.map(d => d.solicitante))].filter(Boolean).sort();
@@ -30,6 +32,8 @@ function atualizarContadorFiltro() {
 }
 
 function getDemandasConcluidas() {
+    if (typeof demandas === 'undefined') return [];
+
     const turno = document.getElementById('filtroTurno')?.value || '';
     const setor = document.getElementById('filtroSetor')?.value || '';
     const solicitante = document.getElementById('filtroSolicitante')?.value || '';
@@ -51,15 +55,18 @@ function getDemandasConcluidas() {
 
 function gerarTabelaRelatorio() {
     const concluidas = getDemandasConcluidas();
-    let tbody = '';
+    var tbody = '';
 
     if (concluidas.length === 0) {
         tbody = '<tr><td colspan="9" style="padding: 15px; text-align: center; color: #6b7280;">Nenhuma demanda concluída encontrada com os filtros atuais.</td></tr>';
     } else {
         concluidas.forEach(d => {
+            let dataForm = d.dataDemanda;
+            if(typeof formatarDataBrasil === 'function') dataForm = formatarDataBrasil(d.dataDemanda);
+
             tbody += `
                 <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 12px 8px; font-size: 14px;">${formatarDataBrasil(d.dataDemanda)}</td>
+                    <td style="padding: 12px 8px; font-size: 14px;">${dataForm}</td>
                     <td style="padding: 12px 8px; font-size: 14px; font-weight: bold;">${d.horario}</td>
                     <td style="padding: 12px 8px; font-size: 14px;">${d.solicitante}<br><span style="font-size: 12px; color: #6b7280;">${d.setor}</span></td>
                     <td style="padding: 12px 8px; font-size: 14px;">${d.partida}</td>

@@ -1,4 +1,4 @@
-let motoristas = [];
+var motoristas = [];
 
 db.collection('motoristas').orderBy('nome', 'asc')
     .onSnapshot((querySnapshot) => {
@@ -6,11 +6,10 @@ db.collection('motoristas').orderBy('nome', 'asc')
         querySnapshot.forEach((doc) => {
             motoristas.push({ ...doc.data(), id: doc.id });
         });
-        updateListaMotoristas();
-        updateSelectMotoristas();
+        if (typeof updateListaMotoristas === 'function') updateListaMotoristas();
+        if (typeof updateSelectMotoristas === 'function') updateSelectMotoristas();
     }, (error) => {
         console.error("Erro ao carregar motoristas: ", error);
-        mostrarMensagem('Erro ao carregar motoristas do servidor', 'error');
     });
 
 function initializePhotoUpload() {
@@ -18,6 +17,8 @@ function initializePhotoUpload() {
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
     const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+    if (!fileInput) return;
 
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -58,18 +59,19 @@ async function salvarMotorista(nome, foto) {
     };
     try {
         await db.collection('motoristas').add(motorista);
-        mostrarMensagem('Motorista cadastrado com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Motorista cadastrado com sucesso!', 'success');
         limparFormularioMotorista();
     } catch (error) {
         console.error("Erro ao cadastrar motorista: ", error);
-        mostrarMensagem('Erro ao cadastrar motorista. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao cadastrar motorista.', 'error');
     }
 }
 
 function limparFormularioMotorista() {
-    document.getElementById('motoristaForm').reset();
-    document.getElementById('previewContainer').classList.add('hidden');
-    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+    const form = document.getElementById('motoristaForm');
+    if (form) form.reset();
+    document.getElementById('previewContainer')?.classList.add('hidden');
+    document.getElementById('uploadPlaceholder')?.classList.remove('hidden');
 }
 
 function updateListaMotoristas() {
@@ -113,9 +115,9 @@ function updateSelectMotoristas() {
 async function removerMotorista(id) {
     try {
         await db.collection('motoristas').doc(id).delete();
-        mostrarMensagem('Motorista removido com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Motorista removido com sucesso!', 'success');
     } catch (error) {
         console.error("Erro ao remover motorista: ", error);
-        mostrarMensagem('Erro ao remover motorista. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao remover motorista.', 'error');
     }
 }

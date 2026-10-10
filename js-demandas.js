@@ -1,4 +1,4 @@
-let demandas = [];
+var demandas = [];
 
 db.collection('demandas').orderBy('dataCadastro', 'desc')
     .onSnapshot((querySnapshot) => {
@@ -6,13 +6,12 @@ db.collection('demandas').orderBy('dataCadastro', 'desc')
         querySnapshot.forEach((doc) => {
             demandas.push({ ...doc.data(), id: doc.id });
         });
-        updateDashboard();
-        updateTimeline();
-        updateEscala();
-        updateCalendario();
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof updateTimeline === 'function') updateTimeline();
+        if (typeof updateEscala === 'function') updateEscala();
+        if (typeof updateCalendario === 'function') updateCalendario();
     }, (error) => {
         console.error("Erro ao carregar demandas: ", error);
-        mostrarMensagem('Erro ao carregar demandas do servidor', 'error');
     });
 
 document.getElementById('demandaForm')?.addEventListener('submit', async function(e) {
@@ -31,30 +30,32 @@ document.getElementById('demandaForm')?.addEventListener('submit', async functio
         observacoes: formData.get('observacoes'),
         status: 'Pendente',
         dataCadastro: new Date().toISOString(),
-        cadastradoPor: usuarioLogado
+        cadastradoPor: typeof usuarioLogado !== 'undefined' ? usuarioLogado : 'Desconhecido'
     };
 
     try {
         await db.collection('demandas').add(demanda);
-        mostrarMensagem('Demanda cadastrada com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Demanda cadastrada com sucesso!', 'success');
         limparFormulario();
     } catch (error) {
         console.error("Erro ao cadastrar demanda: ", error);
-        mostrarMensagem('Erro ao cadastrar demanda. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao cadastrar demanda.', 'error');
     }
 });
 
 function limparFormulario() {
-    document.getElementById('demandaForm').reset();
+    const form = document.getElementById('demandaForm');
+    if (form) form.reset();
     const hoje = new Date().toISOString().split('T')[0];
-    document.getElementById('dataDemanda').value = hoje;
+    const dt = document.getElementById('dataDemanda');
+    if (dt) dt.value = hoje;
 }
 
 function verificarLimiteDemandas() {
-    const dataSelecionada = document.getElementById('dataDemanda').value;
-    const horarioSelecionado = document.getElementById('horario').value;
+    const dataSelecionada = document.getElementById('dataDemanda')?.value;
+    const horarioSelecionado = document.getElementById('horario')?.value;
 
-    if (!dataSelecionada || !horarioSelecionado) return;
+    if (!dataSelecionada || !horarioSelecionado || typeof demandas === 'undefined') return;
 
     const demandasNesteHorario = demandas.filter(d => 
         d.dataDemanda === dataSelecionada && 
@@ -105,20 +106,21 @@ async function alterarStatus(id, novoStatus) {
     try {
         const updateData = { status: novoStatus };
         if (novoStatus === 'Concluída') {
-            updateData.concluidoPor = usuarioLogado;
+            updateData.concluidoPor = typeof usuarioLogado !== 'undefined' ? usuarioLogado : 'Sistema';
         }
         await db.collection('demandas').doc(id).update(updateData);
-        mostrarMensagem(`Status alterado para: ${novoStatus}`, 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem(`Status alterado para: ${novoStatus}`, 'success');
     } catch (error) {
         console.error("Erro ao alterar status: ", error);
-        mostrarMensagem('Erro ao alterar status. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao alterar status.', 'error');
     }
 }
 
 function editarDemanda(id) {
+    if (typeof demandas === 'undefined') return;
     const demanda = demandas.find(d => d.id === id);
     if (!demanda) {
-        mostrarMensagem('Demanda não encontrada!', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Demanda não encontrada!', 'error');
         return;
     }
 
@@ -147,13 +149,15 @@ function updateSelectMotoristasEdicao() {
     const select = document.getElementById('editNomeMotorista');
     const valorAtual = select.value;
     select.innerHTML = '<option value="">Selecione um motorista</option>';
-    motoristas.forEach(motorista => {
-        const option = document.createElement('option');
-        option.value = motorista.nome;
-        option.textContent = motorista.nome;
-        if (motorista.nome === valorAtual) option.selected = true;
-        select.appendChild(option);
-    });
+    if (typeof motoristas !== 'undefined') {
+        motoristas.forEach(motorista => {
+            const option = document.createElement('option');
+            option.value = motorista.nome;
+            option.textContent = motorista.nome;
+            if (motorista.nome === valorAtual) option.selected = true;
+            select.appendChild(option);
+        });
+    }
 }
 
 async function salvarEdicao() {
@@ -176,11 +180,11 @@ async function salvarEdicao() {
     try {
         const id = formData.get('editId');
         await db.collection('demandas').doc(id).update(demandaAtualizada);
-        mostrarMensagem('Demanda atualizada com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Demanda atualizada com sucesso!', 'success');
         fecharModalEdicao();
     } catch (error) {
         console.error("Erro ao atualizar demanda: ", error);
-        mostrarMensagem('Erro ao atualizar demanda. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao atualizar demanda.', 'error');
     }
 }
 
@@ -216,20 +220,25 @@ async function confirmarExclusao(id, button) {
         button.innerHTML = `Excluindo...`;
         button.disabled = true;
         await db.collection('demandas').doc(id).delete();
-        mostrarMensagem('Demanda excluída com sucesso!', 'success');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Demanda excluída com sucesso!', 'success');
         button.closest('.fixed').remove();
     } catch (error) {
         console.error("Erro ao excluir demanda: ", error);
-        mostrarMensagem('Erro ao excluir demanda. Tente novamente.', 'error');
+        if(typeof mostrarMensagem === 'function') mostrarMensagem('Erro ao excluir demanda.', 'error');
         button.disabled = false;
     }
 }
 
 function compartilharWhatsApp(id) {
+    if (typeof demandas === 'undefined') return;
     const demanda = demandas.find(d => d.id === id);
     if (!demanda) return;
 
-    const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+    let dataFormatada = demanda.dataDemanda;
+    if(typeof formatarDataBrasil === 'function') {
+        dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+    }
+    
     const texto = `*NOVA DEMANDA DE TRANSPORTE* 🚗\n\n*Solicitante:* ${demanda.solicitante}\n*Setor:* ${demanda.setor}\n*Data:* ${dataFormatada} às ${demanda.horario}\n*Partida:* ${demanda.partida}\n*Destino:* ${demanda.destino}\n*Motorista:* ${demanda.nomeMotorista || 'A definir'}\n*Placa:* ${demanda.placaVeiculo || 'N/A'}\n*Obs:* ${demanda.observacoes || 'Nenhuma'}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
