@@ -1,0 +1,2594 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransportHub - Sistema de Demandas</title>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=BY4ap4iAg5DaoHJ6AmKILb6sxfWQnmZel2StngcRHMygN5APmTBLukjIVWUuyTdF_Aio9337BJ-_cQ8CU7ogdA" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#374151',
+                        secondary: '#6b7280',
+                        accent: '#9ca3af',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    },
+                    screens: {
+                        'tv-sm': '1366px',
+                        'tv-md': '1920px',
+                        'tv-lg': '2560px',
+                        'tablet': '768px',
+                        'mobile': '480px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { box-sizing: border-box; font-size: 16px; }
+        
+        /* Responsividade para Smart TVs */
+        @media screen and (min-width: 1366px) {
+            body { font-size: 18px; }
+            .tv-text-lg { font-size: 1.5rem; }
+            .tv-text-xl { font-size: 2rem; }
+            .tv-text-2xl { font-size: 2.5rem; }
+            .tv-text-3xl { font-size: 3rem; }
+            .tv-padding { padding: 2rem; }
+            .tv-margin { margin: 1.5rem; }
+        }
+        
+        @media screen and (min-width: 1920px) {
+            body { font-size: 20px; }
+            .tv-text-lg { font-size: 1.75rem; }
+            .tv-text-xl { font-size: 2.25rem; }
+            .tv-text-2xl { font-size: 2.75rem; }
+            .tv-text-3xl { font-size: 3.5rem; }
+            .tv-padding { padding: 2.5rem; }
+            .tv-margin { margin: 2rem; }
+        }
+        
+        @media screen and (min-width: 2560px) {
+            body { font-size: 24px; }
+            .tv-text-lg { font-size: 2rem; }
+            .tv-text-xl { font-size: 2.5rem; }
+            .tv-text-2xl { font-size: 3rem; }
+            .tv-text-3xl { font-size: 4rem; }
+            .tv-padding { padding: 3rem; }
+            .tv-margin { margin: 2.5rem; }
+        }
+        
+        @media screen and (min-width: 768px) and (max-width: 1365px) {
+            .tablet-grid { grid-template-columns: repeat(2, 1fr); }
+            .tablet-text { font-size: 1.1rem; }
+            .tablet-padding { padding: 1.5rem; }
+        }
+        
+        @media screen and (max-width: 767px) {
+            .mobile-grid { grid-template-columns: 1fr; }
+            .mobile-text { font-size: 0.9rem; }
+            .mobile-padding { padding: 1rem; }
+            .mobile-scroll { overflow-x: auto; }
+        }
+        
+        .focusable {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .focusable:focus, .focusable:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+            transform: scale(1.05);
+        }
+        
+        .tv-button {
+            min-height: 48px;
+            min-width: 120px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        
+        @media screen and (min-width: 1366px) {
+            .tv-button { min-height: 56px; min-width: 140px; font-size: 1.1rem; }
+        }
+        
+        @media screen and (min-width: 1920px) {
+            .tv-button { min-height: 64px; min-width: 160px; font-size: 1.2rem; }
+        }
+        
+        .gradient-bg { background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #6b7280 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .status-indicator { animation: blink 2s infinite; }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .timeline-item { position: relative; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: 20px; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, #374151, #6b7280);
+        }
+        .timeline-item:last-child::before { display: none; }
+        
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #2563eb, #7c3aed); }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .decorative-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50">
+    <!-- TELA DE LOGIN COM GLASSMORPHISM -->
+    <div id="telaLogin" class="fixed inset-0 z-[100] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed" style="background-color: #0f172a; background-image: url('https://i.ibb.co/xKTwCyNm/1784038809356-1.png');">
+        
+        <div class="absolute inset-0 bg-black/40"></div>
+
+        <div class="relative z-10 w-full max-w-md p-8 mx-4 bg-white/10 backdrop-blur-lg rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] border border-white/20">
+            <div class="text-center mb-8">
+                <div class="mx-auto w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 shadow-lg border border-white/20">
+                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white tracking-wide">TransportHub</h2>
+                <p class="text-sm text-gray-200 font-medium tracking-wide">SEMCAS - Sistema de Demandas</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10 shadow-inner">
+                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-widest text-center mb-2">Acesso Restrito</h3>
+                    <div>
+                        <select id="loginUsuario" class="w-full px-4 py-3 bg-black/40 text-white placeholder-gray-400 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all backdrop-blur-sm appearance-none cursor-pointer">
+                            <option value="" class="text-gray-900">Selecione o Usuário</option>
+                            <option value="JOYCE" class="text-gray-900">JOYCE</option>
+                            <option value="WELLIGTON" class="text-gray-900">WELLIGTON</option>
+                            <option value="MARCIO DAVID" class="text-gray-900">MARCIO DAVID</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="password" id="loginSenha" placeholder="Senha" class="w-full px-4 py-3 bg-black/40 text-white placeholder-gray-400 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all backdrop-blur-sm">
+                    </div>
+                    <button onclick="entrarComoAdmin()" class="w-full py-3 bg-blue-600/80 hover:bg-blue-600 text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.4)] transition-all flex items-center justify-center backdrop-blur-md border border-blue-500/50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        Entrar
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-center">
+                    <span class="h-px w-full bg-white/20"></span>
+                    <span class="px-3 text-xs text-gray-300 font-medium">OU</span>
+                    <span class="h-px w-full bg-white/20"></span>
+                </div>
+
+                <div>
+                    <input type="text" id="nomeVisitante" placeholder="Seu Nome ou Setor (Opcional)" class="w-full px-4 py-3 bg-black/40 text-white placeholder-gray-400 border border-white/10 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent outline-none transition-all backdrop-blur-sm mb-3 text-center text-sm font-medium">
+                    <button onclick="entrarComoVisitante()" class="w-full py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center backdrop-blur-md">
+                        <svg class="w-5 h-5 mr-2 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        Entrar como Visitante (Leitura)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- FIM TELA DE LOGIN -->
+
+    <div class="min-h-full" id="sistemaPrincipal" style="display: none;">
+        <header class="gradient-bg shadow-lg">
+            <div class="max-w-full mx-auto responsive-padding">
+                <div class="flex justify-between items-center py-2 sm:py-4 md:py-6 tv-sm:py-8 tv-md:py-10 px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 tv-sm:h-12 tv-sm:w-12 tv-md:h-16 tv-md:w-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+                        </div>
+                        <div class="ml-3 tv-sm:ml-6">
+                            <h1 class="text-lg tv-sm:text-2xl tv-md:text-3xl tv-lg:text-4xl font-bold text-white tv-text-2xl">TRANSPORTE &amp; DEMANDAS - SEMCAS</h1>
+                            <p class="text-xs tv-sm:text-base tv-md:text-lg text-indigo-100 tv-text-lg">
+                                <span id="headerGreeting" class="font-bold text-yellow-300"></span>Sistema de Gerenciamento de Demandas by WELLIGTON FERREIRA
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 tv-sm:space-x-4 tv-md:space-x-6">
+                        <div class="text-white text-right hidden sm:block">
+                            <p class="text-xs tv-sm:text-sm tv-md:text-base opacity-90">Hoje</p>
+                            <p class="text-sm tv-sm:text-base tv-md:text-lg font-semibold tv-text-lg" id="currentDate"></p>
+                        </div>
+                        <div class="h-6 w-6 tv-sm:h-10 tv-sm:w-10 tv-md:h-12 tv-md:w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg class="h-3 w-3 tv-sm:h-5 tv-sm:w-5 tv-md:h-6 tv-md:w-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 tv-padding tablet-padding mobile-padding">
+                <div class="flex flex-wrap justify-center tv-sm:justify-start space-x-2 tv-sm:space-x-4 tv-md:space-x-8 mobile-scroll">
+                    <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-button focusable tv-button active py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-primary text-primary font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" /></svg> Dashboard 
+                    </button> 
+                    <button onclick="showTab('cadastro')" id="tab-cadastro" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg> Nova Demanda 
+                    </button> 
+                    <button onclick="showTab('timeline')" id="tab-timeline" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg> Timeline 
+                    </button> 
+                    <button onclick="showTab('motoristas')" id="tab-motoristas" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg> Motoristas 
+                    </button> 
+                    <button onclick="showTab('escala')" id="tab-escala" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg> Escala 
+                    </button> 
+                    <button onclick="showTab('calendario')" id="tab-calendario" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" /></svg> Calendário 
+                    </button>
+                    <!-- NOVA ABA DE AUDITORIA (Exclusiva Admin) -->
+                    <button onclick="showTab('auditoria')" id="tab-auditoria" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap" style="display: none;">
+                        <svg class="w-4 h-4 inline mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Auditoria (Log)
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-full mx-auto py-4 tv-sm:py-6 tv-md:py-8 px-4 sm:px-6 lg:px-8 tv-padding tablet-padding mobile-padding">
+            <div id="dashboard-content" class="tab-content">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 md:gap-6 tv-sm:gap-8 tv-md:gap-10 mb-6 sm:mb-8">
+                    
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-blue-400/30 relative overflow-hidden group">
+                        <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
+                        <div class="flex items-center relative z-10">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-card rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </div>
+                            <div class="ml-4 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-xs sm:text-sm font-semibold text-blue-100 uppercase tracking-wider truncate">Demandas Hoje</dt>
+                                    <dd class="text-2xl sm:text-3xl font-bold text-white mt-1" id="totalDemandas">0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-green-400/30 relative overflow-hidden group">
+                        <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
+                        <div class="flex items-center relative z-10">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-card rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                            </div>
+                            <div class="ml-4 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-xs sm:text-sm font-semibold text-green-100 uppercase tracking-wider truncate">Concluídas Hoje</dt>
+                                    <dd class="text-2xl sm:text-3xl font-bold text-white mt-1" id="concluidas">0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-rose-500 to-red-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-red-400/30 relative overflow-hidden group">
+                        <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
+                        <div class="flex items-center relative z-10">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-card rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                </div>
+                            </div>
+                            <div class="ml-4 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-xs sm:text-sm font-semibold text-red-100 uppercase tracking-wider truncate">Pendentes Hoje</dt>
+                                    <dd class="text-2xl sm:text-3xl font-bold text-white mt-1" id="pendentes">0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl card-shadow p-4 tv-sm:p-6 text-white focusable transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-purple-400/30 relative overflow-hidden group">
+                        <div class="decorative-circle w-24 h-24 -right-6 -top-6 bg-white/10 group-hover:bg-white/20 transition-colors"></div>
+                        <div class="flex items-center relative z-10">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-card rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
+                                </div>
+                            </div>
+                            <div class="ml-4 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-xs sm:text-sm font-semibold text-purple-100 uppercase tracking-wider truncate" title="Total exportado nos Relatórios">Total Atendidas Geral</dt>
+                                    <dd class="text-2xl sm:text-3xl font-bold text-white mt-1" id="totalHistorico">0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transform transition-all duration-300 hover:shadow-md">
+                        <div class="flex items-center mb-4">
+                            <div class="w-2 h-6 bg-amber-500 rounded-full mr-3"></div>
+                            <h3 class="text-lg font-bold text-gray-800">Fluxo por Expediente</h3>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chartExpediente"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transform transition-all duration-300 hover:shadow-md">
+                        <div class="flex items-center mb-4">
+                            <div class="w-2 h-6 bg-violet-500 rounded-full mr-3"></div>
+                            <h3 class="text-lg font-bold text-gray-800">Ranking de Setores Atendidos</h3>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chartSetores"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 tv-sm:p-6 mb-6 sm:mb-8 border-l-4 border-l-purple-500">
+                    <div class="flex flex-col space-y-5">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                    Painel de Exportação & Relatórios
+                                </h3>
+                                <p class="text-sm text-gray-500 mt-1">Exporte o histórico aplicando filtros personalizados em tempo real.</p>
+                            </div>
+                            <div class="mt-2 sm:mt-0 bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
+                                <span class="text-sm text-purple-800 font-medium">Registros Prontos: <strong id="contadorFiltro" class="text-purple-600 text-lg">0</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-50/80 p-4 rounded-lg border border-gray-200 shadow-inner">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Filtrar por Turno</label>
+                                <select id="filtroTurno" onchange="atualizarContadorFiltro()" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 py-2.5 px-3 bg-white transition-colors cursor-pointer">
+                                    <option value="">Todos os Turnos</option>
+                                    <option value="manha">Manhã (06:00 - 11:59)</option>
+                                    <option value="tarde">Tarde (12:00 - 17:59)</option>
+                                    <option value="noite">Noite (18:00 - 05:59)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Filtrar por Setor</label>
+                                <select id="filtroSetor" onchange="atualizarContadorFiltro()" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 py-2.5 px-3 bg-white transition-colors cursor-pointer">
+                                    <option value="">Todos os Setores</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Filtrar por Solicitante</label>
+                                <select id="filtroSolicitante" onchange="atualizarContadorFiltro()" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 py-2.5 px-3 bg-white transition-colors cursor-pointer">
+                                    <option value="">Todos os Solicitantes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 justify-end pt-2">
+                            <button onclick="gerarRelatorioHTML()" class="focusable flex items-center px-4 py-2.5 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                Pré-visualizar HTML
+                            </button>
+                            <button onclick="gerarRelatorioPDF()" class="focusable flex items-center px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                                Gerar PDF
+                            </button>
+                            <button onclick="gerarViewExcel()" class="focusable flex items-center px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm0-4H8v-2h4v2zm2-8h-4V4h4v6z"/></svg>
+                                Exportar Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 tv-sm:p-6 tv-md:p-8">
+                    <h3 class="text-base tv-sm:text-lg tv-md:text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <div class="w-1.5 h-5 bg-indigo-500 rounded-full mr-2"></div>
+                        Demandas Recentes
+                    </h3>
+                    <div id="demandasRecentes" class="space-y-3">
+                        <p class="text-gray-500 text-center py-6 tv-sm:py-8 text-sm tv-sm:text-base">Nenhuma demanda cadastrada ainda</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cadastro-content" class="tab-content hidden">
+                <div class="bg-white rounded-lg card-shadow p-4 tv-sm:p-6 tv-md:p-8">
+                    <h2 class="text-xl tv-sm:text-2xl tv-md:text-3xl font-bold text-gray-900 mb-4 tv-sm:mb-6 tv-text-2xl">Nova Demanda de Transporte</h2>
+                    <form id="demandaForm" class="space-y-4 tv-sm:space-y-6">
+                        <div class="grid mobile-grid tablet-grid grid-cols-1 md:grid-cols-2 gap-4 tv-sm:gap-6">
+                            <div><label for="solicitante" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Solicitante</label> <input type="text" id="solicitante" name="solicitante" required class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="setor" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Setor</label> <input type="text" id="setor" name="setor" required placeholder="Digite o nome do setor" class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                        </div>
+                        <div class="grid mobile-grid tablet-grid grid-cols-1 md:grid-cols-2 gap-4 tv-sm:gap-6">
+                            <div><label for="partida" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Partida</label> <input type="text" id="partida" name="partida" required class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="destino" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Destino</label> <input type="text" id="destino" name="destino" required class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                        </div>
+                        <div class="grid mobile-grid tablet-grid grid-cols-1 md:grid-cols-2 gap-4 tv-sm:gap-6">
+                            <div><label for="dataDemanda" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Data da Demanda</label> <input type="date" id="dataDemanda" name="dataDemanda" required class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="horario" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Horário</label> <input type="time" id="horario" name="horario" required class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                        </div>
+                        <div class="grid mobile-grid grid-cols-1 md:grid-cols-3 gap-4 tv-sm:gap-6">
+                            <div><label for="numeroSei" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Nº SEI</label> <input type="text" id="numeroSei" name="numeroSei" placeholder="0000000-00.0000.0.00.0000" class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="placaVeiculo" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Placa do Veículo</label> <input type="text" id="placaVeiculo" name="placaVeiculo" placeholder="ABC-1234" class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="nomeMotorista" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Nome do Motorista</label> <select id="nomeMotorista" name="nomeMotorista" class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"> <option value="">Selecione um motorista</option> </select>
+                            </div>
+                        </div>
+                        <div><label for="observacoes" class="block text-xs tv-sm:text-sm tv-md:text-base font-medium text-gray-700 mb-2">Observações</label> <textarea id="observacoes" name="observacoes" rows="3" tv-sm:rows="4" class="focusable w-full px-3 tv-sm:px-4 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="Informações adicionais sobre a demanda..."></textarea>
+                        </div>
+                        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4"><button type="button" onclick="limparFormulario()" class="focusable tv-button px-4 tv-sm:px-6 tv-md:px-8 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /></svg> Limpar 
+                        </button> 
+                        <button type="submit" class="focusable tv-button px-4 tv-sm:px-6 tv-md:px-8 py-2 tv-sm:py-3 tv-md:py-4 text-sm tv-sm:text-base tv-md:text-lg bg-primary text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg> Cadastrar Demanda 
+                        </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="motoristas-content" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg card-shadow p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Cadastrar Motorista</h2>
+                        <form id="motoristaForm" class="space-y-6">
+                            <div><label for="nomeMotoristaForm" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label> <input type="text" id="nomeMotoristaForm" name="nomeMotoristaForm" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div><label for="fotoMotorista" class="block text-sm font-medium text-gray-700 mb-2">Foto do Motorista</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <div id="previewContainer" class="hidden"><img id="previewImage" class="mx-auto h-32 w-32 rounded-full object-cover" src="" alt="Preview"></div>
+                                        <div id="uploadPlaceholder">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                            <div class="flex text-sm text-gray-600"><label for="fotoMotorista" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"> <span>Carregar uma foto</span> <input id="fotoMotorista" name="fotoMotorista" type="file" accept="image/*" class="sr-only"> </label>
+                                                <p class="pl-1">ou arrastar e soltar</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF até 10MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-4">
+                                <button type="button" onclick="limparFormularioMotorista()" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"> Limpar </button> 
+                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"> Cadastrar Motorista </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bg-white rounded-lg card-shadow p-8">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Motoristas Cadastrados</h3>
+                        <div id="listaMotoristas" class="space-y-4">
+                            <p class="text-gray-500 text-center py-8">Nenhum motorista cadastrado ainda</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="timeline-content" class="tab-content hidden">
+                <div class="bg-white rounded-lg card-shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Timeline de Demandas</h2>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-success rounded-full status-indicator"></div><span class="text-sm text-gray-600">Atualização em tempo real</span>
+                        </div>
+                    </div>
+                    <div id="timelineContainer" class="space-y-6">
+                        <p class="text-gray-500 text-center py-8">Nenhuma demanda cadastrada</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="calendario-content" class="tab-content hidden">
+                <div class="bg-white rounded-lg card-shadow overflow-hidden">
+                    <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 px-4 tv-sm:px-6 tv-md:px-8 py-4 tv-sm:py-6 tv-md:py-8">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+                            <div>
+                                <h2 class="text-lg tv-sm:text-2xl tv-md:text-3xl tv-lg:text-4xl font-bold text-white tv-text-3xl">Calendário de Demandas</h2>
+                                <p class="text-slate-300 mt-1 tv-sm:mt-2 text-sm tv-sm:text-base tv-md:text-lg tv-text-lg">Visualização mensal das demandas programadas</p>
+                            </div>
+                            <div class="flex items-center space-x-2 sm:space-x-4">
+                                <button onclick="gerarPDFCalendario()" class="focusable flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm shadow-sm" title="Exportar Calendário para PDF">
+                                    <svg class="w-4 h-4 sm:mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                                    <span class="hidden sm:inline">Exportar PDF</span>
+                                </button>
+                                
+                                <div class="flex items-center bg-slate-800 rounded-lg p-1 shadow-inner">
+                                    <button onclick="navegarMes(-1)" class="focusable px-2 sm:px-3 py-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
+                                    <div class="text-center min-w-[100px] sm:min-w-[140px]"><h3 id="mesAnoAtual" class="text-white font-bold text-sm sm:text-base"></h3></div>
+                                    <button onclick="navegarMes(1)" class="focusable px-2 sm:px-3 py-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 tv-sm:p-6 tv-md:p-8 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="grid grid-cols-7 bg-gradient-to-r from-slate-600 via-gray-700 to-slate-800">
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Dom</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Seg</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Ter</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Qua</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Qui</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base border-r border-white border-opacity-20">Sex</div>
+                                <div class="p-3 tv-sm:p-4 text-center text-white font-bold text-sm tv-sm:text-base">Sáb</div>
+                            </div>
+                            <div id="calendarioGrid" class="grid grid-cols-7 divide-x divide-y divide-gray-200"></div>
+                        </div>
+                        <div class="mt-6 bg-white rounded-lg p-4 shadow-md">
+                            <h4 class="text-lg font-bold text-gray-900 mb-3">Legenda</h4>
+                            <div class="flex flex-wrap gap-4">
+                                <div class="flex items-center space-x-2"><div class="w-4 h-4 bg-blue-500 rounded-full"></div><span class="text-sm text-gray-700">Demandas Programadas</span></div>
+                                <div class="flex items-center space-x-2"><div class="w-4 h-4 bg-green-500 rounded-full"></div><span class="text-sm text-gray-700">Semana Atual</span></div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center"><svg class="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg></div>
+                                    <span class="text-sm text-gray-700">Motorista Designado</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="escala-content" class="tab-content hidden">
+                <div class="bg-white rounded-lg card-shadow overflow-hidden">
+                    <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 px-4 tv-sm:px-6 tv-md:px-8 py-4 tv-sm:py-6 tv-md:py-8">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+                            <div>
+                                <h2 class="text-lg tv-sm:text-2xl tv-md:text-3xl tv-lg:text-4xl font-bold text-white tv-text-3xl">Escala de Horários - Demandas de Transporte</h2>
+                                <p class="text-slate-300 mt-1 tv-sm:mt-2 text-sm tv-sm:text-base tv-md:text-lg tv-text-lg">Painel de controle em tempo real</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 tv-sm:w-3 tv-sm:h-3 bg-emerald-400 rounded-full animate-pulse"></div><span class="text-slate-300 text-xs tv-sm:text-sm tv-md:text-base font-medium">Sistema Ativo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 tv-sm:p-6 tv-md:p-8 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+                        <div class="mobile-scroll overflow-x-auto rounded-xl shadow-lg">
+                            <table class="min-w-full bg-white rounded-xl overflow-hidden">
+                                <thead>
+                                    <tr class="bg-gradient-to-r from-slate-600 via-gray-700 to-slate-800">
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg><span class="hidden sm:inline">Data/Hora</span> <span class="sm:hidden"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg></span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="hidden sm:inline">Código</span> <span class="sm:hidden"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg><span class="hidden sm:inline">Destino</span> <span class="sm:hidden"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg></span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20 hidden md:table-cell"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg><span>Solicitante</span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20 hidden lg:table-cell"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" /></svg><span>Nº SEI</span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20 hidden lg:table-cell"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" /></svg><span>Placa</span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider border-r border-white border-opacity-20"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H15V9H21ZM15 11H9C7.9 11 7 11.9 7 13V22H9V18H15V22H17V13C17 11.9 16.1 11 15 11Z" /></svg><span class="hidden sm:inline">Motorista</span> <span class="sm:hidden"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg></span></div></th>
+                                        <th class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 tv-md:py-5 text-left text-xs tv-sm:text-sm tv-md:text-base font-bold text-white uppercase tracking-wider"><div class="flex items-center space-x-1 tv-sm:space-x-2"><svg class="w-3 h-3 tv-sm:w-4 tv-sm:h-4 tv-md:w-5 tv-md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg><span class="hidden sm:inline">Ações</span> <span class="sm:hidden"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg></span></div></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="escalaTableBody" class="bg-white divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="8" class="px-4 tv-sm:px-6 tv-md:px-8 py-8 tv-sm:py-12 text-center">
+                                            <div class="flex flex-col items-center space-y-2 tv-sm:space-y-3">
+                                                <div class="w-12 h-12 tv-sm:w-16 tv-sm:h-16 tv-md:w-20 tv-md:h-20 bg-gradient-to-br from-slate-500 to-gray-600 rounded-full flex items-center justify-center">
+                                                    <svg class="w-6 h-6 tv-sm:w-8 tv-sm:h-8 tv-md:w-10 tv-md:h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" /></svg>
+                                                </div>
+                                                <p class="text-gray-500 text-sm tv-sm:text-base tv-md:text-lg font-medium">Nenhuma demanda cadastrada</p>
+                                                <p class="text-gray-400 text-xs tv-sm:text-sm">Cadastre uma nova demanda para visualizar aqui</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOVA ABA AUDITORIA (Só visível p/ Administradores) -->
+            <div id="auditoria-content" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-5 border-b border-indigo-800">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-white flex items-center">
+                                <svg class="w-6 h-6 mr-3 text-indigo-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-13h-2v6l5.25 3.15.75-1.23-4-2.37z"/></svg>
+                                Registro de Acessos de Visitantes (Auditoria)
+                            </h2>
+                            <button onclick="carregarAuditoria()" class="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded flex items-center transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Atualizar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <div class="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
+                            <table class="min-w-full bg-white divide-y divide-gray-200">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-5 py-4 border-b text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Data/Hora (Início)</th>
+                                        <th class="px-5 py-4 border-b text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Visitante / IP</th>
+                                        <th class="px-5 py-4 border-b text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Dispositivo / Navegador</th>
+                                        <th class="px-5 py-4 border-b text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/3">Rastro de Navegação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaAuditoria" class="divide-y divide-gray-100">
+                                    <tr><td colspan="4" class="px-5 py-8 text-center text-gray-500 text-sm">Clique em "Atualizar" ou aguarde o carregamento...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- FIM ABA AUDITORIA -->
+        </main>
+    </div>
+
+    <div id="modalEdicao" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-96 overflow-y-auto shadow-2xl">
+            <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 px-6 py-4 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Editar Demanda</h3>
+                            <p class="text-slate-300 text-sm">Modifique os dados da demanda</p>
+                        </div>
+                    </div>
+                    <button onclick="fecharModalEdicao()" class="text-slate-300 hover:text-white transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg></button>
+                </div>
+            </div>
+            <div class="p-6 bg-gradient-to-br from-slate-50 to-gray-50">
+                <form id="formEdicao" class="space-y-4">
+                    <input type="hidden" id="editId" name="editId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="editSolicitante" class="block text-sm font-medium text-gray-700 mb-2">Solicitante</label> <input type="text" id="editSolicitante" name="editSolicitante" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                        <div><label for="editSetor" class="block text-sm font-medium text-gray-700 mb-2">Setor</label> <input type="text" id="editSetor" name="editSetor" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="editPartida" class="block text-sm font-medium text-gray-700 mb-2">Partida</label> <input type="text" id="editPartida" name="editPartida" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                        <div><label for="editDestino" class="block text-sm font-medium text-gray-700 mb-2">Destino</label> <input type="text" id="editDestino" name="editDestino" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="editDataDemanda" class="block text-sm font-medium text-gray-700 mb-2">Data da Demanda</label> <input type="date" id="editDataDemanda" name="editDataDemanda" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                        <div><label for="editHorario" class="block text-sm font-medium text-gray-700 mb-2">Horário</label> <input type="time" id="editHorario" name="editHorario" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label for="editNumeroSei" class="block text-sm font-medium text-gray-700 mb-2">Nº SEI</label> <input type="text" id="editNumeroSei" name="editNumeroSei" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                        <div><label for="editPlacaVeiculo" class="block text-sm font-medium text-gray-700 mb-2">Placa do Veículo</label> <input type="text" id="editPlacaVeiculo" name="editPlacaVeiculo" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></div>
+                        <div><label for="editNomeMotorista" class="block text-sm font-medium text-gray-700 mb-2">Nome do Motorista</label> <select id="editNomeMotorista" name="editNomeMotorista" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"> <option value="">Selecione um motorista</option> </select></div>
+                    </div>
+                    <div><label for="editObservacoes" class="block text-sm font-medium text-gray-700 mb-2">Observações</label> <textarea id="editObservacoes" name="editObservacoes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></textarea></div>
+                </form>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-4 border-t">
+                <button onclick="fecharModalEdicao()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"><svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg> Cancelar </button> 
+                <button onclick="salvarEdicao()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"><svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg> Salvar Alterações </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyByll4JEy9rOjgkOWT4DCsKdJjmNVUosVI",
+            authDomain: "controle-de-estoque-65575.firebaseapp.com",
+            projectId: "controle-de-estoque-65575",
+            storageBucket: "controle-de-estoque-65575.firebasestorage.app",
+            messagingSenderId: ".", 
+            appId: "1:.:web:61ec7900ba6c94370ee262", 
+            measurementId: "G-ZY0FJG1Q34"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.warn("Múltiplas abas abertas. A persistência offline do Firebase só funciona em uma aba por vez.");
+                } else if (err.code == 'unimplemented') {
+                    console.warn("O navegador atual não suporta armazenamento offline para o Firebase.");
+                }
+            });
+
+        let demandas = [];
+        let motoristas = [];
+        let usuarioLogado = ''; 
+        let nivelAcesso = null; 
+        
+        let chartExpedienteInstance = null;
+        let chartSetoresInstance = null;
+        
+        let mesAtual = new Date().getMonth();
+        let anoAtual = new Date().getFullYear();
+
+        // Variáveis de Auditoria
+        let sessaoVisitanteId = null;
+
+        db.collection('demandas').orderBy('dataCadastro', 'desc')
+            .onSnapshot((querySnapshot) => {
+                demandas = []; 
+                querySnapshot.forEach((doc) => {
+                    const demanda = {
+                        ...doc.data(),
+                        id: doc.id 
+                    };
+                    demandas.push(demanda);
+                });
+                
+                updateDashboard();
+                updateTimeline();
+                updateEscala();
+                updateCalendario();
+            }, (error) => {
+                console.error("Erro ao carregar demandas: ", error);
+                mostrarMensagem('Erro ao carregar demandas do servidor', 'error');
+            });
+
+        db.collection('motoristas').orderBy('nome', 'asc')
+            .onSnapshot((querySnapshot) => {
+                motoristas = [];
+                querySnapshot.forEach((doc) => {
+                    const motorista = {
+                        ...doc.data(),
+                        id: doc.id 
+                    };
+                    motoristas.push(motorista);
+                });
+                
+                updateListaMotoristas();
+                updateSelectMotoristas();
+            }, (error) => {
+                console.error("Erro ao carregar motoristas: ", error);
+                mostrarMensagem('Erro ao carregar motoristas do servidor', 'error');
+            });
+
+        function criarDataBrasilia(dataString) {
+            const [ano, mes, dia] = dataString.split('-');
+            return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+        }
+
+        function formatarDataBrasil(dataString) {
+            return criarDataBrasilia(dataString).toLocaleDateString('pt-BR');
+        }
+
+        function formatarDataCompletaBrasil(dataString) {
+            return criarDataBrasilia(dataString).toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            setInterval(updateCurrentDate, 60000); // Atualiza a cada minuto
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataDemanda').min = hoje;
+            document.getElementById('dataDemanda').value = hoje;
+            
+            initializePhotoUpload();
+            
+            document.getElementById('dataDemanda').addEventListener('change', verificarLimiteDemandas);
+            document.getElementById('horario').addEventListener('change', verificarLimiteDemandas);
+        });
+
+        function updateCurrentDate() {
+            const agora = new Date();
+            const opcoes = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = 
+                agora.toLocaleDateString('pt-BR', opcoes);
+        }
+
+        function showTab(tabName) {
+            // Rastreamento para visitantes (Auditoria)
+            registrarNavegacaoVisitante(tabName);
+
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.add('hidden'));
+            
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active', 'border-primary', 'text-primary');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            const activeButton = document.getElementById('tab-' + tabName);
+            if(activeButton) {
+                activeButton.classList.add('active', 'border-primary', 'text-primary');
+                activeButton.classList.remove('border-transparent', 'text-gray-500');
+            }
+            
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'timeline') {
+                updateTimeline();
+            } else if (tabName === 'motoristas') {
+                updateListaMotoristas();
+            } else if (tabName === 'escala') {
+                updateEscala();
+            } else if (tabName === 'calendario') {
+                updateCalendario();
+            } else if (tabName === 'auditoria') {
+                carregarAuditoria();
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const cor = tipo === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const mensagem = document.createElement('div');
+            mensagem.className = `fixed top-4 right-4 ${cor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            mensagem.textContent = texto;
+            
+            document.body.appendChild(mensagem);
+            
+            setTimeout(() => {
+                mensagem.style.transform = 'translateX(100%)';
+                setTimeout(() => mensagem.remove(), 300);
+            }, 3000);
+        }
+
+        document.getElementById('demandaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const demanda = {
+                solicitante: formData.get('solicitante'),
+                setor: formData.get('setor'),
+                partida: formData.get('partida'),
+                destino: formData.get('destino'),
+                dataDemanda: formData.get('dataDemanda'),
+                horario: formData.get('horario'),
+                numeroSei: formData.get('numeroSei'),
+                placaVeiculo: formData.get('placaVeiculo'),
+                nomeMotorista: formData.get('nomeMotorista'),
+                observacoes: formData.get('observacoes'),
+                status: 'Pendente',
+                dataCadastro: new Date().toISOString(),
+                cadastradoPor: usuarioLogado
+            };
+            
+            try {
+                await db.collection('demandas').add(demanda);
+                mostrarMensagem('Demanda cadastrada com sucesso!', 'success');
+                limparFormulario();
+            } catch (error) {
+                console.error("Erro ao cadastrar demanda: ", error);
+                mostrarMensagem('Erro ao cadastrar demanda. Tente novamente.', 'error');
+            }
+        });
+
+        function limparFormulario() {
+            document.getElementById('demandaForm').reset();
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataDemanda').value = hoje;
+        }
+
+        function isDataNaSemanaAtual(data) {
+            const hoje = new Date();
+            const dataObj = criarDataBrasilia(data);
+            
+            const inicioSemana = new Date(hoje);
+            inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+            inicioSemana.setHours(0, 0, 0, 0);
+            
+            const fimSemana = new Date(inicioSemana);
+            fimSemana.setDate(inicioSemana.getDate() + 6);
+            fimSemana.setHours(23, 59, 59, 999);
+            
+            return dataObj >= inicioSemana && dataObj <= fimSemana;
+        }
+
+        function compartilharWhatsApp(id) {
+            const demanda = demandas.find(d => d.id === id);
+            if (!demanda) return;
+            
+            const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+            const texto = `*NOVA DEMANDA DE TRANSPORTE* 🚗\n\n*Solicitante:* ${demanda.solicitante}\n*Setor:* ${demanda.setor}\n*Data:* ${dataFormatada} às ${demanda.horario}\n*Partida:* ${demanda.partida}\n*Destino:* ${demanda.destino}\n*Motorista:* ${demanda.nomeMotorista || 'A definir'}\n*Placa:* ${demanda.placaVeiculo || 'N/A'}\n*Obs:* ${demanda.observacoes || 'Nenhuma'}`;
+            
+            window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+        }
+
+        function atualizarFiltrosRelatorio() {
+            const concluidas = demandas.filter(d => d.status === 'Concluída');
+            
+            const setores = [...new Set(concluidas.map(d => d.setor))].filter(Boolean).sort();
+            const solicitantes = [...new Set(concluidas.map(d => d.solicitante))].filter(Boolean).sort();
+            
+            const selectSetor = document.getElementById('filtroSetor');
+            const selectSolicitante = document.getElementById('filtroSolicitante');
+            
+            const valSetor = selectSetor?.value;
+            const valSolicitante = selectSolicitante?.value;
+            
+            if(selectSetor) {
+                selectSetor.innerHTML = '<option value="">Todos os Setores</option>' + 
+                    setores.map(s => `<option value="${s}">${s}</option>`).join('');
+                if(setores.includes(valSetor)) selectSetor.value = valSetor;
+            }
+                
+            if(selectSolicitante) {
+                selectSolicitante.innerHTML = '<option value="">Todos os Solicitantes</option>' + 
+                    solicitantes.map(s => `<option value="${s}">${s}</option>`).join('');
+                if(solicitantes.includes(valSolicitante)) selectSolicitante.value = valSolicitante;
+            }
+
+            atualizarContadorFiltro();
+        }
+
+        function atualizarContadorFiltro() {
+            const total = getDemandasConcluidas().length;
+            const el = document.getElementById('contadorFiltro');
+            if(el) el.textContent = total;
+        }
+
+        function getDemandasConcluidas() {
+            const turno = document.getElementById('filtroTurno')?.value || '';
+            const setor = document.getElementById('filtroSetor')?.value || '';
+            const solicitante = document.getElementById('filtroSolicitante')?.value || '';
+            
+            return demandas.filter(d => {
+                if (d.status !== 'Concluída') return false;
+                
+                if (setor && d.setor !== setor) return false;
+                if (solicitante && d.solicitante !== solicitante) return false;
+                
+                if (turno) {
+                    const hora = parseInt(d.horario.split(':')[0]);
+                    if (turno === 'manha' && (hora < 6 || hora >= 12)) return false;
+                    if (turno === 'tarde' && (hora < 12 || hora >= 18)) return false;
+                    if (turno === 'noite' && (hora >= 6 && hora < 18)) return false; 
+                }
+                
+                return true;
+            }).sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro));
+        }
+        
+        function renderDashboardCharts() {
+            let manha = 0, tarde = 0;
+            demandas.forEach(d => {
+                const hora = parseInt(d.horario.split(':')[0]);
+                if (hora >= 6 && hora < 12) manha++;
+                else tarde++; 
+            });
+
+            const ctxExp = document.getElementById('chartExpediente');
+            if (ctxExp) {
+                if (chartExpedienteInstance) chartExpedienteInstance.destroy();
+                chartExpedienteInstance = new Chart(ctxExp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Manhã', 'Tarde/Noite'],
+                        datasets: [{
+                            data: [manha, tarde],
+                            backgroundColor: ['#f59e0b', '#8b5cf6'], 
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            const setorCount = {};
+            demandas.forEach(d => {
+                const s = d.setor || 'Não informado';
+                setorCount[s] = (setorCount[s] || 0) + 1;
+            });
+            
+            const setoresSorted = Object.keys(setorCount).sort((a, b) => setorCount[b] - setorCount[a]);
+            const labels = setoresSorted.slice(0, 10); 
+            const data = labels.map(l => setorCount[l]);
+
+            const ctxSet = document.getElementById('chartSetores');
+            if (ctxSet) {
+                if (chartSetoresInstance) chartSetoresInstance.destroy();
+                chartSetoresInstance = new Chart(ctxSet, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Demandas',
+                            data: data,
+                            backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y', 
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateDashboard() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const demandasHoje = demandas.filter(d => d.dataDemanda === hoje);
+            
+            document.getElementById('totalDemandas').textContent = demandasHoje.length;
+            document.getElementById('concluidas').textContent = demandasHoje.filter(d => d.status === 'Concluída').length;
+            document.getElementById('pendentes').textContent = demandasHoje.filter(d => d.status === 'Pendente').length;
+            
+            const totalHistoricoEl = document.getElementById('totalHistorico');
+            if (totalHistoricoEl) {
+                totalHistoricoEl.textContent = demandas.filter(d => d.status === 'Concluída').length;
+            }
+            
+            atualizarFiltrosRelatorio();
+            renderDashboardCharts();
+
+            const container = document.getElementById('demandasRecentes');
+            if (demandas.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma demanda cadastrada ainda</p>';
+            } else {
+                const recentes = demandas.slice(-5).reverse();
+                container.innerHTML = recentes.map(demanda => {
+                    const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                    const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+                    return `
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-md text-white hover:shadow-lg transition-shadow border border-white/10">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-bold text-white">${demanda.solicitante}</span>
+                                <span class="text-xs text-indigo-200 px-2 py-0.5 bg-black/20 rounded-full">${demanda.setor}</span>
+                            </div>
+                            <div class="mt-2 text-sm text-indigo-50 font-medium">
+                                ${demanda.partida} <span class="text-indigo-300">→</span> ${demanda.destino}
+                            </div>
+                            <div class="mt-1 text-xs text-indigo-200 flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                ${dataFormatada} às ${demanda.horario}
+                            </div>
+                            ${demanda.nomeMotorista ? `
+                                <div class="mt-2 flex items-center space-x-2">
+                                    ${motorista && motorista.foto ? 
+                                        `<img class="h-6 w-6 rounded-full object-cover ring-2 ring-white/20" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                        `<div class="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
+                                            <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </svg>
+                                        </div>`
+                                    }
+                                    <span class="text-xs text-indigo-100 font-medium">${demanda.nomeMotorista}</span>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="mt-2 text-[11px] text-indigo-100/80 font-medium border-t border-white/10 pt-2 flex items-center flex-wrap gap-2">
+                                <span>👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}</span>
+                                ${demanda.concluidoPor ? `<span class="bg-black/20 px-1.5 py-0.5 rounded text-[10px]">✅ Concluído por: ${demanda.concluidoPor}</span>` : ''}
+                            </div>
+
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-3 py-1.5 text-xs font-bold rounded-full bg-white/10 text-white border border-white/20 shadow-sm backdrop-blur-sm">
+                                ${demanda.status}
+                            </span>
+                        </div>
+                    </div>
+                `;}).join('');
+            }
+        }
+
+        function updateTimeline() {
+            const demandasSemanaAtual = demandas.filter(demanda => 
+                isDataNaSemanaAtual(demanda.dataDemanda) && 
+                demanda.status !== 'Concluída' && 
+                demanda.status !== 'Cancelada pelo setor solicitante'
+            );
+            
+            const demandasPorData = {};
+            demandasSemanaAtual.forEach(demanda => {
+                const data = demanda.dataDemanda;
+                if (!demandasPorData[data]) {
+                    demandasPorData[data] = [];
+                }
+                demandasPorData[data].push(demanda);
+            });
+            
+            const datasOrdenadas = Object.keys(demandasPorData).sort();
+            const container = document.getElementById('timelineContainer');
+            
+            if (datasOrdenadas.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma demanda cadastrada</p>';
+                return;
+            }
+            
+            let html = '';
+            let contador = 1;
+            
+            datasOrdenadas.forEach(data => {
+                const dataFormatada = formatarDataCompletaBrasil(data);
+                const demandasDoDia = demandasPorData[data].sort((a, b) => a.horario.localeCompare(b.horario));
+                
+                const demandasManha = demandasDoDia.filter(d => {
+                    const hora = parseInt(d.horario.split(':')[0]);
+                    return hora >= 6 && hora < 12;
+                });
+                const demandasTarde = demandasDoDia.filter(d => {
+                    const hora = parseInt(d.horario.split(':')[0]);
+                    return hora >= 12 && hora < 18;
+                });
+                const demandasNoite = demandasDoDia.filter(d => {
+                    const hora = parseInt(d.horario.split(':')[0]);
+                    return hora >= 18 || hora < 6;
+                });
+                
+                html += `
+                    <div class="mb-8">
+                        <div class="flex items-center mb-6 p-4 bg-gradient-to-r from-slate-600 to-gray-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                                <h3 class="text-2xl font-bold text-white">${dataFormatada}</h3>
+                            </div>
+                            <div class="ml-4 px-4 py-2 bg-white bg-opacity-20 text-white rounded-full text-sm font-medium">
+                                ${demandasDoDia.length} demanda${demandasDoDia.length !== 1 ? 's' : ''}
+                            </div>
+                        </div>
+                `;
+                
+                if (demandasManha.length > 0) {
+                    html += `
+                        <div class="mb-6">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="h-6 w-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/></svg>
+                                    <h4 class="text-xl font-bold text-gray-900">Manhã (06:00 - 11:59)</h4>
+                                </div>
+                                <div class="ml-4 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                    ${demandasManha.length} demanda${demandasManha.length !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                    `;
+                    demandasManha.forEach(demanda => {
+                        const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                        html += `
+                            <div class="timeline-item flex items-start space-x-4 pb-4">
+                                <div class="flex-shrink-0 w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
+                                <div class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
+                                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                            </button>
+                                            
+                                            ${nivelAcesso === 'admin' ? `
+                                            <button onclick="editarDemanda('${demanda.id}')" class="p-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-colors" title="Editar demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                                            <button onclick="excluirDemanda('${demanda.id}')" class="p-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 rounded-full transition-colors" title="Excluir demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-yellow-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
+                                            <p class="text-yellow-100"><strong>Setor:</strong> ${demanda.setor}</p>
+                                            <p class="text-yellow-100"><strong>Partida:</strong> ${demanda.partida}</p>
+                                            ${demanda.numeroSei ? `<p class="text-yellow-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                        </div>
+                                        <div>
+                                            <p class="text-yellow-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-yellow-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
+                                            ${demanda.nomeMotorista ? `
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="text-yellow-100"><strong>Motorista:</strong></span>
+                                                    ${motorista && motorista.foto ? 
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
+                                                    }
+                                                    <span class="text-yellow-100">${demanda.nomeMotorista}</span>
+                                                </div>
+                                            ` : '<p class="text-yellow-100"><strong>Motorista:</strong> Não informado</p>'}
+                                        </div>
+                                    </div>
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-yellow-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    
+                                    <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
+                                        👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div></div>';
+                }
+                
+                if (demandasTarde.length > 0) {
+                    html += `
+                        <div class="mb-6">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="h-6 w-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/></svg>
+                                    <h4 class="text-xl font-bold text-gray-900">Tarde (12:00 - 17:59)</h4>
+                                </div>
+                                <div class="ml-4 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                                    ${demandasTarde.length} demanda${demandasTarde.length !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                    `;
+                    demandasTarde.forEach(demanda => {
+                        const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                        html += `
+                            <div class="timeline-item flex items-start space-x-4 pb-4">
+                                <div class="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
+                                <div class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg p-4 text-white shadow-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
+                                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                            </button>
+                                            
+                                            ${nivelAcesso === 'admin' ? `
+                                            <button onclick="editarDemanda('${demanda.id}')" class="p-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-colors" title="Editar demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                                            <button onclick="excluirDemanda('${demanda.id}')" class="p-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 rounded-full transition-colors" title="Excluir demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-teal-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
+                                            <p class="text-teal-100"><strong>Setor:</strong> ${demanda.setor}</p>
+                                            <p class="text-teal-100"><strong>Partida:</strong> ${demanda.partida}</p>
+                                            ${demanda.numeroSei ? `<p class="text-teal-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                        </div>
+                                        <div>
+                                            <p class="text-teal-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-teal-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
+                                            ${demanda.nomeMotorista ? `
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="text-teal-100"><strong>Motorista:</strong></span>
+                                                    ${motorista && motorista.foto ? 
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
+                                                    }
+                                                    <span class="text-teal-100">${demanda.nomeMotorista}</span>
+                                                </div>
+                                            ` : '<p class="text-teal-100"><strong>Motorista:</strong> Não informado</p>'}
+                                        </div>
+                                    </div>
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-teal-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    
+                                    <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
+                                        👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div></div>';
+                }
+                
+                if (demandasNoite.length > 0) {
+                    html += `
+                        <div class="mb-6">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="h-6 w-6 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/></svg>
+                                    <h4 class="text-xl font-bold text-gray-900">Noite (18:00 - 05:59)</h4>
+                                </div>
+                                <div class="ml-4 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+                                    ${demandasNoite.length} demanda${demandasNoite.length !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                    `;
+                    demandasNoite.forEach(demanda => {
+                        const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                        html += `
+                            <div class="timeline-item flex items-start space-x-4 pb-4">
+                                <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
+                                <div class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-4 text-white shadow-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
+                                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                            </button>
+                                            
+                                            ${nivelAcesso === 'admin' ? `
+                                            <button onclick="editarDemanda('${demanda.id}')" class="p-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-colors" title="Editar demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                                            <button onclick="excluirDemanda('${demanda.id}')" class="p-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 rounded-full transition-colors" title="Excluir demanda"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-indigo-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
+                                            <p class="text-indigo-100"><strong>Setor:</strong> ${demanda.setor}</p>
+                                            <p class="text-indigo-100"><strong>Partida:</strong> ${demanda.partida}</p>
+                                            ${demanda.numeroSei ? `<p class="text-indigo-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                        </div>
+                                        <div>
+                                            <p class="text-indigo-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-indigo-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
+                                            ${demanda.nomeMotorista ? `
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="text-indigo-100"><strong>Motorista:</strong></span>
+                                                    ${motorista && motorista.foto ? 
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
+                                                    }
+                                                    <span class="text-indigo-100">${demanda.nomeMotorista}</span>
+                                                </div>
+                                            ` : '<p class="text-indigo-100"><strong>Motorista:</strong> Não informado</p>'}
+                                        </div>
+                                    </div>
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-indigo-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    
+                                    <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
+                                        👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function updateEscala() {
+            const demandasOrdenadas = demandas
+                .filter(demanda => isDataNaSemanaAtual(demanda.dataDemanda) && 
+                                   demanda.status !== 'Concluída' && 
+                                   demanda.status !== 'Cancelada pelo setor solicitante')
+                .sort((a, b) => {
+                    const dataA = new Date(a.dataDemanda + 'T' + a.horario);
+                    const dataB = new Date(b.dataDemanda + 'T' + b.horario);
+                    return dataA - dataB;
+                });
+            
+            const tbody = document.getElementById('escalaTableBody');
+            
+            if (demandasOrdenadas.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center space-y-2 tv-sm:space-y-3">
+                                <div class="w-12 h-12 tv-sm:w-16 tv-sm:h-16 tv-md:w-20 tv-md:h-20 bg-gradient-to-br from-slate-500 to-gray-600 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 tv-sm:w-8 tv-sm:h-8 tv-md:w-10 tv-md:h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                                </div>
+                                <p class="text-gray-500 text-sm tv-sm:text-base tv-md:text-lg font-medium">Nenhuma demanda cadastrada</p>
+                                <p class="text-gray-400 text-xs tv-sm:text-sm">Cadastre uma nova demanda para visualizar aqui</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = demandasOrdenadas.map((demanda, index) => {
+                const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
+                const rowColors = [
+                    'bg-gradient-to-r from-slate-50 to-gray-50 hover:from-slate-100 hover:to-gray-100',
+                    'bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100',
+                    'bg-gradient-to-r from-blue-50 to-slate-50 hover:from-blue-100 hover:to-slate-100',
+                    'bg-gradient-to-r from-slate-50 to-blue-50 hover:from-slate-100 hover:to-blue-100',
+                    'bg-gradient-to-r from-indigo-50 to-slate-50 hover:from-indigo-100 hover:to-slate-100'
+                ];
+                const rowColor = rowColors[index % rowColors.length];
+                
+                return `
+                <tr class="${rowColor} border-l-4 border-l-slate-600 transition-all duration-200 hover:shadow-md">
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
+                        <div class="flex items-center space-x-1 tv-sm:space-x-2">
+                            <div class="w-2 h-2 tv-sm:w-3 tv-sm:h-3 bg-gradient-to-r from-slate-600 to-gray-700 rounded-full"></div>
+                            <div class="flex flex-col">
+                                <span class="text-xs tv-sm:text-sm tv-md:text-base font-bold text-gray-900">${demanda.horario}</span>
+                                <span class="text-xs text-gray-600 font-medium">${dataFormatada}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
+                        <div class="px-2 tv-sm:px-3 py-1 bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs tv-sm:text-sm font-bold rounded-full text-center">
+                            TR${demanda.id.toString().padStart(4, '0')}
+                        </div>
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
+                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${demanda.destino}</div>
+                        <div class="text-gray-600 text-xs tv-sm:text-sm font-medium flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            de ${demanda.partida}
+                        </div>
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap hidden md:table-cell">
+                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${demanda.solicitante}</div>
+                        <div class="text-gray-600 text-xs tv-sm:text-sm font-medium flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h-2v-2h-2V9h8v10z"/></svg>
+                            ${demanda.setor}
+                        </div>
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap text-xs tv-sm:text-sm font-medium text-gray-900 hidden lg:table-cell">
+                        ${demanda.numeroSei ? `<div class="px-2 py-1 bg-gradient-to-r from-slate-500 to-gray-600 text-white text-xs font-bold rounded">${demanda.numeroSei}</div>` : '<span class="text-gray-400">-</span>'}
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap text-xs tv-sm:text-sm font-bold text-gray-900 hidden lg:table-cell">
+                        ${demanda.placaVeiculo ? `<div class="px-2 py-1 bg-gradient-to-r from-blue-600 to-slate-700 text-white text-xs font-bold rounded flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>${demanda.placaVeiculo}</div>` : '<span class="text-gray-400">-</span>'}
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
+                        ${demanda.nomeMotorista ? `
+                            <div class="flex items-center space-x-2 tv-sm:space-x-3 px-2 tv-sm:px-3 py-1 tv-sm:py-2 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg">
+                                ${motorista && motorista.foto ? `<img class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full object-cover border-2 border-white shadow-md" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` : `<div class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full bg-white flex items-center justify-center shadow-md"><svg class="h-3 w-3 tv-sm:h-4 tv-sm:w-4 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`}
+                                <span class="text-white font-bold text-xs tv-sm:text-sm hidden sm:inline">${demanda.nomeMotorista}</span>
+                            </div>
+                        ` : '<span class="text-gray-400 font-medium text-xs tv-sm:text-sm">-</span>'}
+                    </td>
+                    <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
+                        <div class="flex items-center space-x-2">
+                            <select onchange="alterarStatus('${demanda.id}', this.value)" class="focusable px-2 tv-sm:px-3 py-1 tv-sm:py-2 text-xs tv-sm:text-sm font-bold border-2 border-slate-300 rounded-lg bg-gradient-to-r from-slate-100 to-gray-100 focus:from-slate-200 focus:to-gray-200 focus:border-slate-500 transition-all duration-200">
+                                <option value="Pendente" ${demanda.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
+                                <option value="Concluída" ${demanda.status === 'Concluída' ? 'selected' : ''}>Concluída</option>
+                                <option value="Cancelada pelo setor solicitante" ${demanda.status === 'Cancelada pelo setor solicitante' ? 'selected' : ''}>Cancelada pelo setor solicitante</option>
+                            </select>
+                            
+                            ${nivelAcesso === 'admin' ? `
+                            <button onclick="editarDemanda('${demanda.id}')" class="p-1 bg-blue-500 hover:bg-blue-600 rounded-full transition-colors" title="Editar demanda">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                            </button>
+                            <button onclick="excluirDemanda('${demanda.id}')" class="p-1 bg-red-500 hover:bg-red-600 rounded-full transition-colors" title="Excluir demanda">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;}).join('');
+        }
+
+        async function alterarStatus(id, novoStatus) {
+            try {
+                const updateData = { status: novoStatus };
+                
+                if (novoStatus === 'Concluída') {
+                    updateData.concluidoPor = usuarioLogado;
+                }
+
+                await db.collection('demandas').doc(id).update(updateData);
+                mostrarMensagem(`Status alterado para: ${novoStatus}`, 'success');
+            } catch (error) {
+                console.error("Erro ao alterar status: ", error);
+                mostrarMensagem('Erro ao alterar status. Tente novamente.', 'error');
+            }
+        }
+
+        function editarDemanda(id) {
+            const demanda = demandas.find(d => d.id === id);
+            if (!demanda) {
+                mostrarMensagem('Demanda não encontrada!', 'error');
+                return;
+            }
+
+            document.getElementById('editId').value = demanda.id;
+            document.getElementById('editSolicitante').value = demanda.solicitante;
+            document.getElementById('editSetor').value = demanda.setor;
+            document.getElementById('editPartida').value = demanda.partida;
+            document.getElementById('editDestino').value = demanda.destino;
+            document.getElementById('editDataDemanda').value = demanda.dataDemanda;
+            document.getElementById('editHorario').value = demanda.horario;
+            document.getElementById('editNumeroSei').value = demanda.numeroSei || '';
+            document.getElementById('editPlacaVeiculo').value = demanda.placaVeiculo || '';
+            document.getElementById('editNomeMotorista').value = demanda.nomeMotorista || '';
+            document.getElementById('editObservacoes').value = demanda.observacoes || '';
+
+            updateSelectMotoristasEdicao();
+            document.getElementById('modalEdicao').classList.remove('hidden');
+        }
+
+        function fecharModalEdicao() {
+            document.getElementById('modalEdicao').classList.add('hidden');
+            document.getElementById('formEdicao').reset();
+        }
+
+        async function salvarEdicao() {
+            const form = document.getElementById('formEdicao');
+            const formData = new FormData(form);
+            
+            const demandaAtualizada = {
+                solicitante: formData.get('editSolicitante'),
+                setor: formData.get('editSetor'),
+                partida: formData.get('editPartida'),
+                destino: formData.get('editDestino'),
+                dataDemanda: formData.get('editDataDemanda'),
+                horario: formData.get('editHorario'),
+                numeroSei: formData.get('editNumeroSei'),
+                placaVeiculo: formData.get('editPlacaVeiculo'),
+                nomeMotorista: formData.get('editNomeMotorista'),
+                observacoes: formData.get('editObservacoes')
+            };
+
+            try {
+                const id = formData.get('editId');
+                await db.collection('demandas').doc(id).update(demandaAtualizada);
+                mostrarMensagem('Demanda atualizada com sucesso!', 'success');
+                fecharModalEdicao();
+            } catch (error) {
+                console.error("Erro ao atualizar demanda: ", error);
+                mostrarMensagem('Erro ao atualizar demanda. Tente novamente.', 'error');
+            }
+        }
+
+        async function excluirDemanda(id) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg max-w-md w-full shadow-2xl">
+                    <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-lg">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                                <p class="text-red-100 text-sm">Esta ação não pode ser desfeita</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-700 mb-4">Tem certeza que deseja excluir esta demanda?</p>
+                        <p class="text-sm text-gray-500">Todos os dados serão permanentemente removidos do sistema.</p>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-4 border-t">
+                        <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"><svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>Cancelar</button>
+                        <button onclick="confirmarExclusao('${id}', this)" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"><svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Excluir Definitivamente</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function confirmarExclusao(id, button) {
+            try {
+                button.innerHTML = `<svg class="w-4 h-4 inline mr-2 animate-spin" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg>Excluindo...`;
+                button.disabled = true;
+                await db.collection('demandas').doc(id).delete();
+                mostrarMensagem('Demanda excluída com sucesso!', 'success');
+                button.closest('.fixed').remove();
+            } catch (error) {
+                console.error("Erro ao excluir demanda: ", error);
+                mostrarMensagem('Erro ao excluir demanda. Tente novamente.', 'error');
+                button.innerHTML = `<svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Excluir Definitivamente`;
+                button.disabled = false;
+            }
+        }
+
+        async function excluirDemandaCalendario(id, solicitante, horario) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg max-w-sm w-full shadow-2xl">
+                    <div class="bg-gradient-to-r from-red-600 to-red-700 px-4 py-3 rounded-t-lg">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <h3 class="text-lg font-bold text-white">Excluir Demanda</h3>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-gray-700 text-sm mb-2">Confirmar exclusão da demanda:</p>
+                        <div class="bg-gray-50 rounded p-3 mb-3">
+                            <p class="font-medium text-gray-900">${solicitante}</p>
+                            <p class="text-sm text-gray-600">${horario}</p>
+                        </div>
+                        <p class="text-xs text-gray-500">Esta ação não pode ser desfeita.</p>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 rounded-b-lg flex justify-end space-x-2 border-t">
+                        <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm font-medium">Cancelar</button>
+                        <button onclick="confirmarExclusaoCalendario('${id}', this)" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium">Excluir</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function confirmarExclusaoCalendario(id, button) {
+            try {
+                button.innerHTML = `<svg class="w-4 h-4 inline mr-1 animate-spin" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg>Excluindo...`;
+                button.disabled = true;
+                await db.collection('demandas').doc(id).delete();
+                mostrarMensagem('Demanda excluída com sucesso!', 'success');
+                button.closest('.fixed').remove();
+            } catch (error) {
+                console.error("Erro ao excluir demanda: ", error);
+                mostrarMensagem('Erro ao excluir demanda. Tente novamente.', 'error');
+                button.innerHTML = 'Excluir';
+                button.disabled = false;
+            }
+        }
+
+        function updateSelectMotoristasEdicao() {
+            const select = document.getElementById('editNomeMotorista');
+            const valorAtual = select.value;
+            select.innerHTML = '<option value="">Selecione um motorista</option>';
+            motoristas.forEach(motorista => {
+                const option = document.createElement('option');
+                option.value = motorista.nome;
+                option.textContent = motorista.nome;
+                if (motorista.nome === valorAtual) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
+        function initializePhotoUpload() {
+            const fileInput = document.getElementById('fotoMotorista');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        previewContainer.classList.remove('hidden');
+                        uploadPlaceholder.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        document.getElementById('motoristaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const fileInput = document.getElementById('fotoMotorista');
+            const file = fileInput.files[0];
+            
+            let fotoBase64 = '';
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fotoBase64 = e.target.result;
+                    salvarMotorista(formData.get('nomeMotoristaForm'), fotoBase64);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                salvarMotorista(formData.get('nomeMotoristaForm'), '');
+            }
+        });
+
+        async function salvarMotorista(nome, foto) {
+            const motorista = {
+                nome: nome,
+                foto: foto,
+                dataCadastro: new Date().toISOString()
+            };
+            try {
+                await db.collection('motoristas').add(motorista);
+                mostrarMensagem('Motorista cadastrado com sucesso!', 'success');
+                limparFormularioMotorista();
+            } catch (error) {
+                console.error("Erro ao cadastrar motorista: ", error);
+                mostrarMensagem('Erro ao cadastrar motorista. Tente novamente.', 'error');
+            }
+        }
+
+        function limparFormularioMotorista() {
+            document.getElementById('motoristaForm').reset();
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        }
+
+        function verificarLimiteDemandas() {
+            const dataSelecionada = document.getElementById('dataDemanda').value;
+            const horarioSelecionado = document.getElementById('horario').value;
+
+            // Só verifica se ambos os campos estiverem preenchidos
+            if (!dataSelecionada || !horarioSelecionado) return;
+
+            // Conta quantas demandas ativas existem para esse dia e horário
+            const demandasNesteHorario = demandas.filter(d => 
+                d.dataDemanda === dataSelecionada && 
+                d.horario === horarioSelecionado && 
+                d.status !== 'Cancelada pelo setor solicitante'
+            ).length;
+
+            // Se atingir 3 demandas, exibe o aviso
+            if (demandasNesteHorario >= 3) {
+                mostrarAvisoLimiteDemandas(demandasNesteHorario);
+            }
+        }
+
+        function mostrarAvisoLimiteDemandas(qtdDemandas) {
+            // Remove aviso existente, se houver, para não acumular pop-ups na tela
+            const avisoExistente = document.getElementById('avisoLimitePopUp');
+            if (avisoExistente) avisoExistente.remove();
+
+            const aviso = document.createElement('div');
+            aviso.id = 'avisoLimitePopUp';
+            aviso.className = 'fixed top-6 right-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-5 py-4 rounded-xl shadow-2xl z-[200] transform transition-all duration-300 flex items-start max-w-sm border-l-4 border-yellow-700 translate-x-full';
+            
+            aviso.innerHTML = `
+                <div class="mr-3 mt-0.5 animate-pulse">
+                    <svg class="w-6 h-6 text-yellow-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-sm text-white tracking-wide">Atenção: Horário Sobrecarregado</h4>
+                    <p class="text-xs mt-1 text-yellow-50 leading-relaxed">Já existem <strong>${qtdDemandas} demandas</strong> para este mesmo dia e horário. Agendar uma próxima demanda será arriscado.</p>
+                </div>
+                <button onclick="fecharAvisoLimite(this.parentElement)" class="ml-4 text-yellow-200 hover:text-white transition-colors focus:outline-none bg-black/10 hover:bg-black/20 rounded-full p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            
+            document.body.appendChild(aviso);
+
+            // Animação de entrada
+            setTimeout(() => {
+                aviso.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto-remover após 7 segundos
+            setTimeout(() => {
+                fecharAvisoLimite(aviso);
+            }, 7000);
+        }
+
+        function fecharAvisoLimite(elemento) {
+            if (elemento) {
+                elemento.classList.add('translate-x-full');
+                elemento.style.opacity = '0';
+                setTimeout(() => {
+                    if (elemento.parentNode) {
+                        elemento.remove();
+                    }
+                }, 300);
+            }
+        }
+
+        function updateListaMotoristas() {
+            const container = document.getElementById('listaMotoristas');
+            if (motoristas.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhum motorista cadastrado ainda</p>';
+                return;
+            }
+            container.innerHTML = motoristas.map(motorista => `
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        ${motorista.foto ? 
+                            `<img class="h-12 w-12 rounded-full object-cover" src="${motorista.foto}" alt="${motorista.nome}">` :
+                            `<div class="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-6 w-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-medium text-gray-900">${motorista.nome}</h4>
+                        <p class="text-xs text-gray-500">Cadastrado em ${new Date(motorista.dataCadastro).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <button onclick="removerMotorista('${motorista.id}')" class="text-red-600 hover:text-red-800">
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateSelectMotoristas() {
+            const select = document.getElementById('nomeMotorista');
+            select.innerHTML = '<option value="">Selecione um motorista</option>';
+            motoristas.forEach(motorista => {
+                const option = document.createElement('option');
+                option.value = motorista.nome;
+                option.textContent = motorista.nome;
+                select.appendChild(option);
+            });
+        }
+
+        async function removerMotorista(id) {
+            try {
+                await db.collection('motoristas').doc(id).delete();
+                mostrarMensagem('Motorista removido com sucesso!', 'success');
+            } catch (error) {
+                console.error("Erro ao remover motorista: ", error);
+                mostrarMensagem('Erro ao remover motorista. Tente novamente.', 'error');
+            }
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'Pendente': return 'bg-yellow-100 text-yellow-800';
+                case 'Em Andamento': return 'bg-blue-100 text-blue-800';
+                case 'Concluída': return 'bg-green-100 text-green-800';
+                case 'Cancelada pelo setor solicitante': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function navegarMes(direcao) {
+            mesAtual += direcao;
+            if (mesAtual > 11) {
+                mesAtual = 0;
+                anoAtual++;
+            } else if (mesAtual < 0) {
+                mesAtual = 11;
+                anoAtual--;
+            }
+            updateCalendario();
+        }
+
+        function updateCalendario() {
+            const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            document.getElementById('mesAnoAtual').textContent = `${nomesMeses[mesAtual]} ${anoAtual}`;
+            const primeiroDia = new Date(anoAtual, mesAtual, 1);
+            const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+            const diasNoMes = ultimoDia.getDate();
+            const diaSemanaInicio = primeiroDia.getDay();
+            
+            const hoje = new Date();
+            const inicioSemanaAtual = new Date(hoje);
+            inicioSemanaAtual.setDate(hoje.getDate() - hoje.getDay());
+            const fimSemanaAtual = new Date(inicioSemanaAtual);
+            fimSemanaAtual.setDate(inicioSemanaAtual.getDate() + 6);
+            
+            const grid = document.getElementById('calendarioGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < diaSemanaInicio; i++) {
+                const diaVazio = document.createElement('div');
+                diaVazio.className = 'h-24 tv-sm:h-32 bg-gray-50 border-gray-200';
+                grid.appendChild(diaVazio);
+            }
+            
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                const dataAtual = new Date(anoAtual, mesAtual, dia);
+                const dataString = dataAtual.toISOString().split('T')[0];
+                const demandasDoDia = demandas.filter(d => d.dataDemanda === dataString);
+                const estaNaSemanaAtual = dataAtual >= inicioSemanaAtual && dataAtual <= fimSemanaAtual;
+                
+                const diaElement = document.createElement('div');
+                diaElement.className = `h-24 tv-sm:h-32 p-2 relative cursor-pointer transition-colors hover:bg-gray-50 ${estaNaSemanaAtual ? 'bg-green-50 border-green-200' : 'bg-white'}`;
+                
+                const numeroDia = document.createElement('div');
+                numeroDia.className = `text-sm tv-sm:text-base font-bold ${estaNaSemanaAtual ? 'text-green-700' : 'text-gray-900'}`;
+                numeroDia.textContent = dia;
+                diaElement.appendChild(numeroDia);
+                
+                if (demandasDoDia.length > 0) {
+                    const indicadoresContainer = document.createElement('div');
+                    indicadoresContainer.className = 'mt-1 space-y-1';
+                    
+                    const demandasParaMostrar = demandasDoDia.slice(0, 3);
+                    demandasParaMostrar.forEach(demanda => {
+                        const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                        const indicador = document.createElement('div');
+                        indicador.className = 'flex items-center justify-between space-x-1 group hover:bg-gray-100 rounded px-1 py-0.5 transition-colors';
+                        
+                        const containerEsquerdo = document.createElement('div');
+                        containerEsquerdo.className = 'flex items-center space-x-1';
+                        
+                        if (motorista && motorista.foto) {
+                            const foto = document.createElement('img');
+                            foto.src = motorista.foto;
+                            foto.alt = motorista.nome;
+                            foto.className = 'w-4 h-4 tv-sm:w-5 tv-sm:h-5 rounded-full object-cover border border-white shadow-sm';
+                            containerEsquerdo.appendChild(foto);
+                        } else {
+                            const iconeMotorista = document.createElement('div');
+                            iconeMotorista.className = 'w-4 h-4 tv-sm:w-5 tv-sm:h-5 rounded-full bg-blue-500 flex items-center justify-center';
+                            iconeMotorista.innerHTML = `<svg class="w-2 h-2 tv-sm:w-3 tv-sm:h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+                            containerEsquerdo.appendChild(iconeMotorista);
+                        }
+                        
+                        const horario = document.createElement('span');
+                        horario.className = 'text-xs text-gray-600 font-medium';
+                        horario.textContent = demanda.horario;
+                        containerEsquerdo.appendChild(horario);
+                        indicador.appendChild(containerEsquerdo);
+                        
+                        const botaoFechar = document.createElement('button');
+                        botaoFechar.className = 'w-3 h-3 tv-sm:w-4 tv-sm:h-4 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200';
+                        botaoFechar.title = 'Excluir demanda';
+                        botaoFechar.innerHTML = `<svg class="w-2 h-2 tv-sm:w-2.5 tv-sm:h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+                        
+                        botaoFechar.addEventListener('click', (e) => {
+                            e.stopPropagation(); 
+                            excluirDemandaCalendario(demanda.id, demanda.solicitante, demanda.horario);
+                        });
+                        
+                        if (nivelAcesso === 'admin') {
+                            indicador.appendChild(botaoFechar);
+                        }
+                        
+                        indicadoresContainer.appendChild(indicador);
+                    });
+                    
+                    if (demandasDoDia.length > 3) {
+                        const contador = document.createElement('div');
+                        contador.className = 'text-xs text-blue-600 font-bold';
+                        contador.textContent = `+${demandasDoDia.length - 3} mais`;
+                        indicadoresContainer.appendChild(contador);
+                    }
+                    diaElement.appendChild(indicadoresContainer);
+                }
+                
+                if (demandasDoDia.length > 0) {
+                    diaElement.addEventListener('click', () => mostrarDetalhesDia(dataString, demandasDoDia));
+                }
+                grid.appendChild(diaElement);
+            }
+            
+            const totalCelulas = grid.children.length;
+            const celulasRestantes = 42 - totalCelulas;
+            for (let i = 0; i < celulasRestantes; i++) {
+                const diaVazio = document.createElement('div');
+                diaVazio.className = 'h-24 tv-sm:h-32 bg-gray-50 border-gray-200';
+                grid.appendChild(diaVazio);
+            }
+        }
+
+        function mostrarDetalhesDia(data, demandasDoDia) {
+            const dataFormatada = formatarDataCompletaBrasil(data);
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            
+            let demandasHtml = '';
+            demandasDoDia.forEach((demanda, index) => {
+                const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
+                demandasHtml += `
+                    <div class="bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-4 border-l-4 border-l-blue-500 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                    ${index + 1}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                    <span class="text-lg font-bold text-gray-900">${demanda.horario}</span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(demanda.status)}">${demanda.status}</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="space-y-2">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                    <span class="text-gray-700"><strong>Solicitante:</strong> ${demanda.solicitante}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h-2v-2h-2V9h8v10z"/></svg>
+                                    <span class="text-gray-700"><strong>Setor:</strong> ${demanda.setor}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    <span class="text-gray-700"><strong>Partida:</strong> ${demanda.partida}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <span class="text-gray-700"><strong>Destino:</strong> ${demanda.destino}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                ${demanda.nomeMotorista ? `
+                                    <div class="flex items-center space-x-2">
+                                        ${motorista && motorista.foto ? 
+                                            `<img class="w-6 h-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                            `<svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H15V9H21ZM15 11H9C7.9 11 7 11.9 7 13V22H9V18H15V22H17V13C17 11.9 16.1 11 15 11Z"/></svg>`
+                                        }
+                                        <span class="text-gray-700"><strong>Motorista:</strong> ${demanda.nomeMotorista}</span>
+                                    </div>
+                                ` : ''}
+                                ${demanda.placaVeiculo ? `
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                                        <span class="text-gray-700"><strong>Placa:</strong> ${demanda.placaVeiculo}</span>
+                                    </div>
+                                ` : ''}
+                                ${demanda.numeroSei ? `
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+                                        <span class="text-gray-700"><strong>Nº SEI:</strong> ${demanda.numeroSei}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                                    <span class="text-gray-700"><strong>Status:</strong> ${demanda.status}</span>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2 pt-2">
+                                    <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                    <span class="text-gray-700"><strong>Cadastrado por:</strong> ${demanda.cadastradoPor || 'Sistema'}</span>
+                                </div>
+                                ${demanda.status === 'Concluída' && demanda.concluidoPor ? `
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span class="text-gray-700"><strong>Concluído por:</strong> ${demanda.concluidoPor}</span>
+                                </div>
+                                ` : ''}
+
+                            </div>
+                        </div>
+                        ${demanda.observacoes ? `
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <div class="flex items-start space-x-2">
+                                    <svg class="w-4 h-4 text-gray-600 mt-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                                    <div><span class="text-gray-700 font-medium">Observações:</span><p class="text-gray-600 text-sm mt-1">${demanda.observacoes}</p></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${nivelAcesso === 'admin' ? `
+                        <div class="mt-4 pt-3 border-t border-gray-200 flex justify-end space-x-2">
+                            <button onclick="editarDemanda('${demanda.id}')" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium flex items-center space-x-1" title="Editar demanda"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><span>Editar</span></button>
+                            <button onclick="excluirDemanda('${demanda.id}')" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium flex items-center space-x-1" title="Excluir demanda"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><span>Excluir</span></button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg max-w-4xl w-full max-h-96 overflow-y-auto shadow-2xl">
+                    <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 px-6 py-4 rounded-t-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">${dataFormatada}</h3>
+                                    <p class="text-slate-300 text-sm">${demandasDoDia.length} demanda${demandasDoDia.length !== 1 ? 's' : ''} programada${demandasDoDia.length !== 1 ? 's' : ''}</p>
+                                </div>
+                            </div>
+                            <button onclick="this.closest('.fixed').remove()" class="text-slate-300 hover:text-white transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-gradient-to-br from-slate-50 to-gray-50">
+                        ${demandasHtml}
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end border-t">
+                        <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium"><svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>Fechar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function gerarTabelaRelatorio() {
+            const concluidas = getDemandasConcluidas();
+            let tbody = '';
+            
+            if (concluidas.length === 0) {
+                tbody = '<tr><td colspan="9" style="padding: 15px; text-align: center; color: #6b7280;">Nenhuma demanda concluída encontrada com os filtros atuais.</td></tr>';
+            } else {
+                concluidas.forEach(d => {
+                    tbody += `
+                        <tr style="border-bottom: 1px solid #e5e7eb; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='transparent'">
+                            <td style="padding: 12px 8px; font-size: 14px;">${formatarDataBrasil(d.dataDemanda)}</td>
+                            <td style="padding: 12px 8px; font-size: 14px; font-weight: bold;">${d.horario}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${d.solicitante}<br><span style="font-size: 12px; color: #6b7280;">${d.setor}</span></td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${d.partida}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${d.destino}</td>
+                            <td style="padding: 12px 8px; font-size: 14px; font-weight: 500;">${d.nomeMotorista || '-'}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${d.placaVeiculo || '-'}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${d.numeroSei || '-'}</td>
+                            <td style="padding: 12px 8px; font-size: 14px; color: #4b5563;">
+                                <span style="font-size: 11px;">Cad: ${d.cadastradoPor || '-'}</span><br>
+                                <span style="font-size: 11px;">Baixa: ${d.concluidoPor || '-'}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            return `
+                <table id="tabelaRelatorio" style="width: 100%; border-collapse: collapse; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; text-align: left; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <thead style="background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #6b7280 100%); color: white;">
+                        <tr>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Data</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Hora</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Solicitante / Setor</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Partida</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Destino</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Motorista</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Placa</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Nº SEI</th>
+                            <th style="padding: 15px 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Operador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tbody}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function gerarEstruturaPagina(titulo, botoesExtras = '', scriptExtra = '') {
+            const turno = document.getElementById('filtroTurno')?.options[document.getElementById('filtroTurno')?.selectedIndex]?.text || 'Todos';
+            const setor = document.getElementById('filtroSetor')?.value || 'Todos';
+            const solicitante = document.getElementById('filtroSolicitante')?.value || 'Todos';
+
+            return `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${titulo}</title>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <style>
+                        body { background-color: #f3f4f6; padding: 2rem; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+                        .container { max-width: 1200px; margin: 0 auto; }
+                        @media print {
+                            .no-print { display: none !important; }
+                            body { background-color: white; padding: 0; }
+                            .container { max-width: 100%; box-shadow: none; border: none; }
+                            table { page-break-inside: auto; }
+                            tr { page-break-inside: avoid; page-break-after: auto; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="bg-white p-6 rounded-t-xl border-b-4 border-purple-600 flex justify-between items-start md:items-center shadow-sm flex-col md:flex-row gap-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-bold text-gray-900">TRANSPORTE & DEMANDAS - SEMCAS</h1>
+                                    <h2 class="text-lg text-gray-600 font-medium">${titulo}</h2>
+                                    <p class="text-sm text-gray-500 mt-1">Gerado em: ${new Date().toLocaleString('pt-BR')} por TransportHub</p>
+                                </div>
+                            </div>
+                            <div class="no-print flex space-x-2">
+                                ${botoesExtras}
+                                <button onclick="window.close()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium transition-colors">Fechar Janela</button>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50 px-6 py-3 border-x border-b border-gray-200 text-sm text-purple-900 flex gap-6 font-medium">
+                            <span><strong>Turno:</strong> ${turno}</span>
+                            <span><strong>Setor:</strong> ${setor}</span>
+                            <span><strong>Solicitante:</strong> ${solicitante}</span>
+                        </div>
+                        <div class="mt-4 shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                            ${gerarTabelaRelatorio()}
+                        </div>
+                        <div class="mt-4 text-center text-sm text-gray-500 no-print">
+                            Total de registros exportados: <strong>${getDemandasConcluidas().length}</strong>
+                        </div>
+                    </div>
+                    ${scriptExtra}
+                </body>
+                </html>
+            `;
+        }
+
+        function gerarRelatorioHTML() {
+            const janela = window.open('', '_blank');
+            const botaoImprimir = '<button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm">Imprimir Relatório</button>';
+            janela.document.write(gerarEstruturaPagina('Relatório de Demandas Concluídas', botaoImprimir));
+            janela.document.close();
+        }
+
+        function gerarRelatorioPDF() {
+            const janela = window.open('', '_blank');
+            janela.document.write(gerarEstruturaPagina('Relatório de Demandas Concluídas (Pronto para PDF)'));
+            janela.document.close();
+            setTimeout(() => { janela.print(); }, 1000);
+        }
+
+        function gerarViewExcel() {
+            const botaoExcel = `
+                <button onclick="baixarExcel()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors shadow-sm flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm0-4H8v-2h4v2zm2-8h-4V4h4v6z"/></svg>
+                    Download Excel
+                </button>
+            `;
+            const scriptExcel = `
+                <script>
+                    function baixarExcel() {
+                        const tabela = document.getElementById('tabelaRelatorio').outerHTML;
+                        const htmlBase = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + tabela + '</body></html>';
+                        const blob = new Blob([htmlBase], { type: 'application/vnd.ms-excel' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'SEMCAS_Demandas_Filtradas.xls';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                <\/script>
+            `;
+            const janela = window.open('', '_blank');
+            janela.document.write(gerarEstruturaPagina('Exportação Excel', botaoExcel, scriptExcel));
+            janela.document.close();
+        }
+
+        function gerarPDFCalendario() {
+            const janela = window.open('', '_blank');
+            const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = `Calendário de Demandas - ${nomesMeses[mesAtual]} ${anoAtual}`;
+            
+            const primeiroDia = new Date(anoAtual, mesAtual, 1);
+            const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+            const diasNoMes = ultimoDia.getDate();
+            const diaSemanaInicio = primeiroDia.getDay();
+            
+            let htmlGrid = '';
+            
+            const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            htmlGrid += '<tr style="background-color: #f3f4f6;">';
+            diasSemana.forEach(dia => {
+                htmlGrid += `<th style="padding: 10px; border: 1px solid #d1d5db; text-align: center; width: 14.28%; color: #374151; font-weight: bold; text-transform: uppercase; font-size: 14px;">${dia}</th>`;
+            });
+            htmlGrid += '</tr><tr>';
+            
+            let diaAtualNaSemana = 0;
+            
+            for (let i = 0; i < diaSemanaInicio; i++) {
+                htmlGrid += '<td style="padding: 10px; border: 1px solid #d1d5db; background-color: #f9fafb; min-height: 120px; vertical-align: top;"></td>';
+                diaAtualNaSemana++;
+            }
+            
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                if (diaAtualNaSemana === 7) {
+                    htmlGrid += '</tr><tr>';
+                    diaAtualNaSemana = 0;
+                }
+                
+                const dataAtual = new Date(anoAtual, mesAtual, dia);
+                const dataString = dataAtual.toISOString().split('T')[0];
+                const demandasDoDia = demandas.filter(d => d.dataDemanda === dataString).sort((a, b) => a.horario.localeCompare(b.horario));
+                
+                let demandasHtml = '';
+                demandasDoDia.forEach(d => {
+                    const bgColor = d.status === 'Concluída' ? '#dcfce7' : (d.status === 'Cancelada pelo setor solicitante' ? '#fee2e2' : '#eff6ff');
+                    const borderColor = d.status === 'Concluída' ? '#22c55e' : (d.status === 'Cancelada pelo setor solicitante' ? '#ef4444' : '#3b82f6');
+                    
+                    demandasHtml += `
+                        <div style="font-size: 10px; margin-top: 4px; padding: 4px; background-color: ${bgColor}; border-left: 3px solid ${borderColor}; border-radius: 3px; overflow: hidden; line-height: 1.3; break-inside: avoid;">
+                            <div style="font-weight: bold; color: #111827;">${d.horario} - ${d.solicitante}</div>
+                            <div style="color: #4b5563;">Dest: ${d.destino}</div>
+                            ${d.nomeMotorista ? `<div style="color: #4b5563; font-style: italic;">Mot: ${d.nomeMotorista}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                htmlGrid += `
+                    <td style="padding: 8px; border: 1px solid #d1d5db; vertical-align: top; height: 120px; width: 14.28%;">
+                        <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #1f2937;">${dia}</div>
+                        ${demandasHtml}
+                    </td>
+                `;
+                diaAtualNaSemana++;
+            }
+            
+            while (diaAtualNaSemana < 7) {
+                htmlGrid += '<td style="padding: 10px; border: 1px solid #d1d5db; background-color: #f9fafb; min-height: 120px; vertical-align: top;"></td>';
+                diaAtualNaSemana++;
+            }
+            htmlGrid += '</tr>';
+
+            const estruturaHtml = `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${titulo}</title>
+                    <style>
+                        body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; padding: 20px; color: #374151; background-color: #f3f4f6;}
+                        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+                        h1 { color: #1f2937; margin: 0; font-size: 24px; text-transform: uppercase; }
+                        h2 { color: #4b5563; margin: 5px 0 0 0; font-size: 18px; font-weight: normal; }
+                        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        @media print {
+                            .no-print { display: none !important; }
+                            body { padding: 0; background-color: white; }
+                            .container { box-shadow: none; max-width: 100%; padding: 0; }
+                            @page { size: landscape; margin: 1cm; }
+                            table { page-break-inside: auto; }
+                            tr { page-break-inside: avoid; page-break-after: auto; }
+                        }
+                        .btn { display: inline-flex; align-items: center; padding: 10px 20px; background-color: #dc2626; color: white; text-decoration: none; border-radius: 6px; cursor: pointer; border: none; font-size: 14px; font-weight: bold; transition: background-color 0.2s;}
+                        .btn:hover { background-color: #b91c1c; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <div>
+                                <h1>SEMCAS - Sistema de Demandas</h1>
+                                <h2>${titulo}</h2>
+                            </div>
+                            <div class="no-print">
+                                <button class="btn" onclick="window.print()">
+                                    <svg style="width: 18px; height: 18px; margin-right: 8px;" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                                    Imprimir / Salvar PDF
+                                </button>
+                                <button class="btn" style="background-color: #6b7280; margin-left: 10px;" onclick="window.close()">Fechar</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px; display: flex; gap: 15px; font-size: 12px;" class="no-print">
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #eff6ff; border-left: 3px solid #3b82f6; margin-right: 5px;"></span> Pendente / Em Andamento</span>
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #dcfce7; border-left: 3px solid #22c55e; margin-right: 5px;"></span> Concluída</span>
+                            <span style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: #fee2e2; border-left: 3px solid #ef4444; margin-right: 5px;"></span> Cancelada</span>
+                        </div>
+
+                        <table>
+                            ${htmlGrid}
+                        </table>
+                        <div style="margin-top: 20px; font-size: 12px; color: #6b7280; text-align: center;">
+                            Gerado em: ${new Date().toLocaleString('pt-BR')}
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            janela.document.write(estruturaHtml);
+            janela.document.close();
+            
+            setTimeout(() => { janela.print(); }, 1000);
+        }
+
+        async function obterIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('Erro ao obter IP:', error);
+                return 'IP Indisponível';
+            }
+        }
+
+        function extrairInfoNavegador(userAgent) {
+            let browser = "Desconhecido";
+            if(userAgent.includes("Firefox")) browser = "Firefox";
+            else if(userAgent.includes("Edg")) browser = "Edge";
+            else if(userAgent.includes("Chrome")) browser = "Chrome";
+            else if(userAgent.includes("Safari")) browser = "Safari";
+            
+            let os = "Desconhecido";
+            if(userAgent.includes("Win")) os = "Windows";
+            else if(userAgent.includes("Mac")) os = "MacOS";
+            else if(userAgent.includes("Linux")) os = "Linux";
+            else if(userAgent.includes("Android")) os = "Android";
+            else if(userAgent.includes("like Mac")) os = "iOS";
+
+            return `${os} - ${browser}`;
+        }
+
+        async function iniciarSessaoVisitante(nomeVisitante) {
+            const ip = await obterIP();
+            const dispositivo = extrairInfoNavegador(navigator.userAgent);
+            
+            sessaoVisitanteId = db.collection('auditoria_visitantes').doc().id;
+            
+            let historicoInicial = [`[${new Date().toLocaleTimeString('pt-BR')}] Login efetuado`];
+            
+            if (window.historicoPendente && window.historicoPendente.length > 0) {
+                historicoInicial = historicoInicial.concat(window.historicoPendente);
+                window.historicoPendente = []; 
+            }
+
+            try {
+                await db.collection('auditoria_visitantes').doc(sessaoVisitanteId).set({
+                    nome: nomeVisitante,
+                    ip: ip,
+                    dispositivo: dispositivo,
+                    userAgent: navigator.userAgent,
+                    dataInicio: new Date().toISOString(),
+                    historico: historicoInicial
+                });
+            } catch(e) {
+                console.error("Erro ao registrar inicio da sessão", e);
+            }
+        }
+
+        async function registrarNavegacaoVisitante(aba) {
+            if (nivelAcesso === 'visitante') {
+                const registro = `[${new Date().toLocaleTimeString('pt-BR')}] Acessou: ${aba.toUpperCase()}`;
+                
+                if (!sessaoVisitanteId) {
+                    if(!window.historicoPendente) window.historicoPendente = [];
+                    window.historicoPendente.push(registro);
+                    return;
+                }
+
+                try {
+                    await db.collection('auditoria_visitantes').doc(sessaoVisitanteId).update({
+                        historico: firebase.firestore.FieldValue.arrayUnion(registro)
+                    });
+                } catch(e) {
+                    console.error("Erro ao registrar navegação na auditoria", e);
+                }
+            }
+        }
+
+        function carregarAuditoria() {
+            if(nivelAcesso !== 'admin') return;
+
+            db.collection('auditoria_visitantes').orderBy('dataInicio', 'desc').limit(50)
+                .onSnapshot((querySnapshot) => {
+                    const tbody = document.getElementById('tabelaAuditoria');
+                    
+                    if(querySnapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="px-5 py-8 text-center text-gray-500">Nenhum acesso de visitante registrado ainda.</td></tr>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    querySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const dataObj = new Date(data.dataInicio);
+                        const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR');
+                        const nomeVisitor = data.nome || 'Visitante Anônimo';
+                        
+                        const historicoHtml = data.historico.map(h => `<div class="text-[11px] font-medium text-gray-700 bg-gray-200/60 rounded px-2 py-1 mb-1 shadow-sm">${h}</div>`).join('');
+
+                        html += `
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-5 py-4 border-b text-sm font-semibold text-gray-900 whitespace-nowrap">${dataFormatada}</td>
+                                <td class="px-5 py-4 border-b">
+                                    <div class="font-bold text-gray-900 flex items-center">
+                                        <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                        ${nomeVisitor}
+                                    </div>
+                                    <div class="text-xs text-blue-600 font-mono mt-1 tracking-wider">${data.ip}</div>
+                                </td>
+                                <td class="px-5 py-4 border-b text-sm text-gray-700">
+                                    <div class="font-bold text-gray-800 flex items-center">
+                                        <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7V7h10v6z"/></svg>
+                                        ${data.dispositivo}
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 mt-1 truncate max-w-[200px]" title="${data.userAgent}">${data.userAgent}</div>
+                                </td>
+                                <td class="px-5 py-4 border-b">
+                                    <div class="max-h-28 overflow-y-auto pr-2 space-y-1 scrollbar-thin scrollbar-thumb-gray-300">
+                                        ${historicoHtml}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }, error => {
+                    console.error("Erro ao carregar auditoria:", error);
+                    document.getElementById('tabelaAuditoria').innerHTML = '<tr><td colspan="4" class="px-5 py-8 text-center text-red-500">Ocorreu um erro ao buscar os logs de auditoria.</td></tr>';
+                });
+        }
+
+        function entrarComoAdmin() {
+            const usuario = document.getElementById('loginUsuario').value;
+            const senha = document.getElementById('loginSenha').value;
+
+            if (!usuario) {
+                alert("Por favor, selecione um usuário.");
+                return;
+            }
+
+            const credenciaisOcultas = {
+                'JOYCE': 'MTI0NQ==',
+                'WELLIGTON': 'MDIwNQ==',
+                'MARCIO DAVID': 'MjAyNg=='
+            };
+
+            if (btoa(senha) === credenciaisOcultas[usuario]) {
+                nivelAcesso = 'admin';
+                usuarioLogado = usuario;
+                iniciarSistema();
+            } else {
+                alert('Senha incorreta para ' + usuario + '!');
+            }
+        }
+
+        function entrarComoVisitante() {
+            let nomeInput = document.getElementById('nomeVisitante').value.trim();
+            if (!nomeInput) {
+                nomeInput = 'Visitante Anônimo';
+            }
+
+            nivelAcesso = 'visitante';
+            usuarioLogado = nomeInput;
+            
+            // Inicia o rastreamento em segundo plano sem impactar a UX, gravando o nome
+            iniciarSessaoVisitante(nomeInput);
+            
+            iniciarSistema();
+        }
+
+        function iniciarSistema() {
+            const headerGreeting = document.getElementById('headerGreeting');
+            if (headerGreeting) {
+                headerGreeting.textContent = nivelAcesso === 'admin' 
+                    ? `Oi, ${usuarioLogado.split(' ')[0]} | ` 
+                    : `Oi, ${usuarioLogado} | `;
+            }
+
+            document.getElementById('telaLogin').style.display = 'none';
+            const mainApp = document.querySelector('.min-h-full');
+            if(mainApp) mainApp.style.display = 'block';
+
+            const tabAuditoria = document.getElementById('tab-auditoria');
+            if (nivelAcesso === 'admin' && (usuarioLogado === 'WELLIGTON' || usuarioLogado === 'MARCIO DAVID' || usuarioLogado === 'JOYCE')) {
+                // Apenas Administradores têm o botão de auditoria ativado
+                if(tabAuditoria) tabAuditoria.style.display = 'inline-flex';
+            } else {
+                if(tabAuditoria) tabAuditoria.style.display = 'none';
+            }
+
+            if (nivelAcesso === 'visitante') {
+                aplicarRestricoesVisitante();
+            }
+        }
+
+        function aplicarRestricoesVisitante() {
+            const tabCadastro = document.getElementById('tab-cadastro');
+            const tabMotoristas = document.getElementById('tab-motoristas');
+            if(tabCadastro) tabCadastro.style.display = 'none';
+            if(tabMotoristas) tabMotoristas.style.display = 'none';
+
+            const selectsStatus = document.querySelectorAll('select[onchange*="alterarStatus"]');
+            selectsStatus.forEach(select => {
+                select.disabled = true;
+                select.classList.add('bg-gray-100', 'cursor-not-allowed', 'opacity-70');
+            });
+
+            const botoesAcao = document.querySelectorAll('button[onclick*="editarDemanda"], button[onclick*="excluirDemanda"], button[title*="Excluir"], button[title*="Editar"]');
+            botoesAcao.forEach(btn => btn.style.display = 'none');
+
+            const headerTitle = document.querySelector('.text-indigo-100');
+            if (headerTitle && !document.getElementById('tagVisitante')) {
+                headerTitle.innerHTML += ' <span id="tagVisitante" class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900 shadow-sm">Modo Visitante</span>';
+            }
+        }
+
+        const observerAcesso = new MutationObserver((mutations) => {
+            if (nivelAcesso === 'visitante') {
+                aplicarRestricoesVisitante();
+            }
+        });
+
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+            observerAcesso.observe(mainElement, { childList: true, subtree: true });
+        }
+    </script>
+</body>
+</html>
