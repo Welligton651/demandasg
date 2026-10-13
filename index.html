@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TransportHub - Sistema de Demandas</title>
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=BY4ap4iAg5DaoHJ6AmKILb6sxfWQnmZel2StngcRHMygN5APmTBLukjIVWUuyTdF_Aio9337BJ-_cQ8CU7ogdA" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Sistema de gerenciamento de demandas de transporte e controle de férias da SEMCAS.">
+    <meta name="theme-color" content="#1f2937">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="TransportHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -31,6 +41,7 @@
             }
         }
     </script>
+    
     <style>
         body { box-sizing: border-box; font-size: 16px; }
         
@@ -137,11 +148,26 @@
             background: rgba(255, 255, 255, 0.1);
             pointer-events: none;
         }
+
+        /* Notificação customizada em vez do alert() */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
     </style>
 </head>
 <body class="h-full bg-gray-50">
+    
+    <!-- Container para notificações (substituindo alert) -->
+    <div id="custom-message-box"></div>
+
     <!-- TELA DE LOGIN COM GLASSMORPHISM -->
-    <div id="telaLogin" class="fixed inset-0 z-[100] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed" style="background-color: #0f172a; background-image: url('https://i.ibb.co/xKTwCyNm/1784038809356-1.png');">
+    <div id="telaLogin" class="fixed inset-0 z-[100] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed" style="background-color: #0f172a; background-image: url('fundo-login.jpg'), url('https://i.ibb.co/FLMnNqZq/Gemini-Generated-Image-89folx89folx89fo.jpg');">
         
         <div class="absolute inset-0 bg-black/40"></div>
 
@@ -180,6 +206,10 @@
                     <span class="h-px w-full bg-white/20"></span>
                 </div>
 
+                <p class="text-[11px] leading-relaxed text-gray-300/90 text-center px-2">
+                    <strong class="text-gray-200">Aviso de privacidade (LGPD):</strong> ao entrar como visitante, seu nome, endereço IP, dispositivo/navegador e as telas acessadas são registrados para fins de segurança e auditoria do sistema.
+                </p>
+
                 <div>
                     <input type="text" id="nomeVisitante" placeholder="Seu Nome ou Setor (Opcional)" class="w-full px-4 py-3 bg-black/40 text-white placeholder-gray-400 border border-white/10 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent outline-none transition-all backdrop-blur-sm mb-3 text-center text-sm font-medium">
                     <button onclick="entrarComoVisitante()" class="w-full py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center backdrop-blur-md">
@@ -207,14 +237,22 @@
                             </p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2 tv-sm:space-x-4 tv-md:space-x-6">
+                    <div class="flex items-center space-x-3 tv-sm:space-x-4 tv-md:space-x-6">
                         <div class="text-white text-right hidden sm:block">
                             <p class="text-xs tv-sm:text-sm tv-md:text-base opacity-90">Hoje</p>
                             <p class="text-sm tv-sm:text-base tv-md:text-lg font-semibold tv-text-lg" id="currentDate"></p>
                         </div>
-                        <div class="h-6 w-6 tv-sm:h-10 tv-sm:w-10 tv-md:h-12 tv-md:w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                            <svg class="h-3 w-3 tv-sm:h-5 tv-sm:w-5 tv-md:h-6 tv-md:w-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                        <div class="hidden sm:flex h-8 w-8 tv-sm:h-10 tv-sm:w-10 bg-white bg-opacity-20 rounded-full items-center justify-center border border-white/20">
+                            <svg class="h-4 w-4 tv-sm:h-5 tv-sm:w-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
                         </div>
+                        <button id="btnInstalarApp" onclick="instalarApp()" style="display:none" class="focusable items-center justify-center px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-md border border-emerald-400" title="Instalar o TransportHub neste dispositivo">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4"></path></svg>
+                            Instalar app
+                        </button>
+                        <button onclick="sairSistema()" class="focusable flex items-center justify-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium shadow-md border border-red-400">
+                            <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                            Sair
+                        </button>
                     </div>
                 </div>
             </div>
@@ -245,11 +283,16 @@
                     <button onclick="showTab('auditoria')" id="tab-auditoria" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap" style="display: none;">
                         <svg class="w-4 h-4 inline mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Auditoria (Log)
                     </button>
+                    <!-- NOVA ABA FÉRIAS (Exclusiva Admin) -->
+                    <button onclick="showTab('ferias')" id="tab-ferias" class="tab-button focusable tv-button py-3 tv-sm:py-4 tv-md:py-5 px-2 tv-sm:px-4 tv-md:px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-xs tv-sm:text-sm tv-md:text-base tv-text-lg whitespace-nowrap" style="display: none;">
+                        <svg class="w-4 h-4 inline mr-2 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg> Controle de Férias
+                    </button>
                 </div>
             </div>
         </nav>
 
         <main class="max-w-full mx-auto py-4 tv-sm:py-6 tv-md:py-8 px-4 sm:px-6 lg:px-8 tv-padding tablet-padding mobile-padding">
+            
             <div id="dashboard-content" class="tab-content">
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 md:gap-6 tv-sm:gap-8 tv-md:gap-10 mb-6 sm:mb-8">
@@ -341,6 +384,38 @@
                         </div>
                         <div class="relative h-64">
                             <canvas id="chartSetores"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICOS DE TENDÊNCIA (curva + pizza) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                            <div class="flex items-center">
+                                <div class="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                                <h3 class="text-lg font-bold text-gray-800">Demandas por dia</h3>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span id="badgeInclinacao" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600"></span>
+                                <select id="periodoTendencia" onchange="renderGraficosTendencia()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer">
+                                    <option value="7">Últimos 7 dias</option>
+                                    <option value="15" selected>Últimos 15 dias</option>
+                                    <option value="30">Últimos 30 dias</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="relative h-64"><canvas id="chartTendencia"></canvas></div>
+                        <p id="resumoTendencia" class="mt-3 text-xs text-gray-500"></p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center mb-4">
+                            <div class="w-2 h-6 bg-emerald-500 rounded-full mr-3"></div>
+                            <h3 class="text-lg font-bold text-gray-800">Situação das demandas</h3>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chartStatusPizza"></canvas>
+                            <div id="vazioStatusPizza" class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-400">Sem demandas no período</div>
                         </div>
                     </div>
                 </div>
@@ -471,7 +546,7 @@
                                             <div class="flex text-sm text-gray-600"><label for="fotoMotorista" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"> <span>Carregar uma foto</span> <input id="fotoMotorista" name="fotoMotorista" type="file" accept="image/*" class="sr-only"> </label>
                                                 <p class="pl-1">ou arrastar e soltar</p>
                                             </div>
-                                            <p class="text-xs text-gray-500">PNG, JPG, GIF até 10MB</p>
+                                            <p class="text-xs text-gray-500">PNG, JPG ou GIF (a foto é reduzida automaticamente)</p>
                                         </div>
                                     </div>
                                 </div>
@@ -637,6 +712,107 @@
                 </div>
             </div>
             <!-- FIM ABA AUDITORIA -->
+
+            <!-- ABA CONTROLE DE FÉRIAS -->
+            <div id="ferias-content" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                    <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-4 py-6 sm:px-6 sm:py-8">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
+                            <div>
+                                <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center">
+                                    <svg class="w-8 h-8 mr-3 text-orange-100" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg>
+                                    Controle de Férias
+                                </h2>
+                                <p class="text-orange-100 mt-1">Gestão de substituições e afastamentos nas unidades</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                                <button onclick="abrirModalFerias()" class="flex-1 md:flex-none px-4 py-2.5 bg-white text-orange-600 hover:bg-orange-50 font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Lançar Férias
+                                </button>
+                                <button onclick="gerarRelatorioFerias()" class="flex-1 md:flex-none px-4 py-2.5 bg-orange-900/40 hover:bg-orange-900/60 text-white font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center border border-white/20" title="Relatório dos servidores de férias no mês exibido">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm0-4H8v-2h4v2zm2-8h-4V4h4v6z"/></svg>
+                                    Gerar Relatório
+                                </button>
+                                
+                                <div class="flex items-center bg-orange-900/30 rounded-lg p-1">
+                                    <button onclick="navegarMes(-1)" class="p-2 text-white hover:bg-orange-800/50 rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
+                                    <div class="text-center min-w-[120px]"><h3 id="mesAnoAtualFerias" class="text-white font-bold text-sm sm:text-base uppercase tracking-wider"></h3></div>
+                                    <button onclick="navegarMes(1)" class="p-2 text-white hover:bg-orange-800/50 rounded transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 sm:p-6 bg-gray-50">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                            <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0" id="icoKpi_kpiFeriasHoje"></div>
+                                <div class="min-w-0"><div class="text-2xl font-bold text-gray-900" id="kpiFeriasHoje">0</div><div class="text-xs text-gray-500 font-medium truncate">De férias hoje</div></div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0" id="icoKpi_kpiFeriasMes"></div>
+                                <div class="min-w-0"><div class="text-2xl font-bold text-gray-900" id="kpiFeriasMes">0</div><div class="text-xs text-gray-500 font-medium truncate">Férias neste mês</div></div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0" id="icoKpi_kpiFeriasProx"></div>
+                                <div class="min-w-0"><div class="text-2xl font-bold text-gray-900" id="kpiFeriasProx">0</div><div class="text-xs text-gray-500 font-medium truncate">Começam em 30 dias</div></div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0" id="icoKpi_kpiFeriasUnid"></div>
+                                <div class="min-w-0"><div class="text-2xl font-bold text-gray-900" id="kpiFeriasUnid">0</div><div class="text-xs text-gray-500 font-medium truncate">Unidades com desfalque hoje</div></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                            <label for="filtroFeriasUnidade" class="text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Filtrar unidades</label>
+                            <select id="filtroFeriasUnidade" onchange="aplicarFiltroFerias(this.value)" class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-orange-400 outline-none cursor-pointer">
+                                <option value="">Geral (todas as unidades)</option>
+                                <option value="controle">Somente CT, CRAS, CREAS e Conselhos de Direito</option>
+                                <optgroup label="Uma unidade específica">
+                                    <option value="CT">Conselho Tutelar (CT)</option>
+                                    <option value="CRAS">CRAS</option>
+                                    <option value="CREAS">CREAS</option>
+                                    <option value="CONSELHOS">Conselhos de Direito (CMDCA, CMDI, CMAS)</option>
+                                    <option value="OUTROS">Outros</option>
+                                </optgroup>
+                            </select>
+                            <span class="text-xs text-gray-500 sm:ml-auto">O filtro vale para o calendário, indicadores, gráficos e para o relatório.</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-3 text-xs text-gray-600" id="legendaFerias"></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="grid grid-cols-7 bg-gray-100 border-b border-gray-200">
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Dom</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Seg</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Ter</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Qua</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Qui</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Sex</div>
+                                <div class="p-3 text-center text-gray-500 font-bold text-sm">Sáb</div>
+                            </div>
+                            <div id="calendarioFeriasGrid" class="grid grid-cols-7 divide-x divide-y divide-gray-100"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6">
+                            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                                    <h3 class="text-base font-bold text-gray-800 flex items-center gap-2"><span id="icoCurvaFerias" class="text-orange-500"></span>Pessoas de férias por dia</h3>
+                                    <span id="badgeInclinacaoFerias" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600"></span>
+                                </div>
+                                <div class="relative h-60"><canvas id="chartFeriasCurva"></canvas></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                                <h3 class="text-base font-bold text-gray-800 flex items-center gap-2 mb-4"><span id="icoPizzaFerias" class="text-orange-500"></span>Férias do mês por setor</h3>
+                                <div class="relative h-60">
+                                    <canvas id="chartFeriasPizza"></canvas>
+                                    <div id="vazioFeriasPizza" class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-400">Nenhuma férias neste mês</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- FIM ABA FÉRIAS -->
+
         </main>
     </div>
 
@@ -684,6 +860,72 @@
         </div>
     </div>
 
+    <!-- MODAL DE CADASTRO DE FÉRIAS -->
+    <div id="modalCadastrarFerias" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl transform transition-all">
+            <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Lançar Férias
+                </h3>
+                <button onclick="fecharModalFerias()" class="text-orange-100 hover:text-white transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+            </div>
+            <form id="formFerias" onsubmit="salvarFerias(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Funcionário de Férias</label>
+                    <input type="text" id="nomeFuncionarioFerias" required placeholder="Nome completo do funcionário" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Unidade/Lotação</label>
+                    <input type="text" id="lotacaoFerias" required list="listaUnidadesFerias" placeholder="Ex: CRAS Centro, CREAS, Conselho Tutelar, CMDCA..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none">
+                    <datalist id="listaUnidadesFerias">
+                        <option value="Conselho Tutelar"></option>
+                        <option value="CRAS"></option>
+                        <option value="CREAS"></option>
+                        <option value="CMDCA"></option>
+                        <option value="CMDI"></option>
+                        <option value="CMAS"></option>
+                    </datalist>
+                    <p class="text-[11px] text-gray-500 mt-1">Escreva o nome da unidade com CT, CRAS, CREAS, CMDCA, CMDI ou CMAS para ela entrar no setor certo do gráfico.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Data de Início</label>
+                        <input type="date" id="dataInicioFerias" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none text-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Data Final</label>
+                        <input type="date" id="dataFimFerias" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none text-gray-700">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nome do Substituto</label>
+                    <input type="text" id="substitutoFerias" required placeholder="Quem cobrirá a unidade?" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none bg-orange-50">
+                </div>
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" onclick="fecharModalFerias()" class="px-5 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 shadow-md transition-colors">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES DE FÉRIAS (Ao clicar no dia) -->
+    <div id="modalDetalhesFerias" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center" id="tituloDetalhesFerias">Férias Registradas</h3>
+                <button onclick="document.getElementById('modalDetalhesFerias').classList.add('hidden')" class="text-slate-300 hover:text-white transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+            </div>
+            <div id="conteudoDetalhesFerias" class="p-0 max-h-[60vh] overflow-y-auto divide-y divide-gray-100">
+                <!-- Preenchido via JS -->
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+                <button onclick="document.getElementById('modalDetalhesFerias').classList.add('hidden')" class="px-5 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400 transition-colors">Fechar Janela</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyByll4JEy9rOjgkOWT4DCsKdJjmNVUosVI",
@@ -712,8 +954,15 @@
         let usuarioLogado = ''; 
         let nivelAcesso = null; 
         
+        let ferias = []; // Novo estado para as Férias
+        let filtroFeriasUnidade = ''; // '', 'controle', 'CT', 'CRAS', 'CREAS', 'CONSELHOS', 'OUTROS'
+
         let chartExpedienteInstance = null;
         let chartSetoresInstance = null;
+        let chartTendenciaInstance = null;
+        let chartStatusPizzaInstance = null;
+        let chartFeriasCurvaInstance = null;
+        let chartFeriasPizzaInstance = null;
         
         let mesAtual = new Date().getMonth();
         let anoAtual = new Date().getFullYear();
@@ -759,6 +1008,20 @@
                 mostrarMensagem('Erro ao carregar motoristas do servidor', 'error');
             });
 
+        // Listener para coleção de Férias
+        db.collection('ferias').orderBy('dataInicio', 'asc')
+            .onSnapshot((querySnapshot) => {
+                ferias = [];
+                querySnapshot.forEach((doc) => {
+                    ferias.push({ ...doc.data(), id: doc.id });
+                });
+                
+                // Atualiza o calendário se a aba estiver aberta ou não
+                updateCalendarioFerias();
+            }, (error) => {
+                console.error("Erro ao carregar férias: ", error);
+            });
+
         function criarDataBrasilia(dataString) {
             const [ano, mes, dia] = dataString.split('-');
             return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
@@ -781,7 +1044,7 @@
             updateCurrentDate();
             setInterval(updateCurrentDate, 60000); // Atualiza a cada minuto
             
-            const hoje = new Date().toISOString().split('T')[0];
+            const hoje = dataLocalStr(new Date());
             document.getElementById('dataDemanda').min = hoje;
             document.getElementById('dataDemanda').value = hoje;
             
@@ -836,20 +1099,44 @@
                 updateCalendario();
             } else if (tabName === 'auditoria') {
                 carregarAuditoria();
+            } else if (tabName === 'ferias') {
+                updateCalendarioFerias();
             }
         }
 
         function mostrarMensagem(texto, tipo) {
-            const cor = tipo === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const container = document.getElementById('custom-message-box');
+            if (!container) return;
+
+            const corBg = tipo === 'success' ? 'bg-green-500' : 'bg-red-500';
             const mensagem = document.createElement('div');
-            mensagem.className = `fixed top-4 right-4 ${cor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
-            mensagem.textContent = texto;
+            mensagem.className = `${corBg} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 flex items-center justify-between`;
+            mensagem.style.minWidth = '250px';
+            mensagem.style.transform = 'translateX(100%)';
+            mensagem.style.opacity = '0';
             
-            document.body.appendChild(mensagem);
+            mensagem.innerHTML = `
+                <span>${texto}</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
             
+            container.appendChild(mensagem);
+            
+            // Entrada suave
+            requestAnimationFrame(() => {
+                mensagem.style.transform = 'translateX(0)';
+                mensagem.style.opacity = '1';
+            });
+            
+            // Remoção automática
             setTimeout(() => {
-                mensagem.style.transform = 'translateX(100%)';
-                setTimeout(() => mensagem.remove(), 300);
+                if(mensagem.parentElement) {
+                    mensagem.style.transform = 'translateX(100%)';
+                    mensagem.style.opacity = '0';
+                    setTimeout(() => mensagem.remove(), 300);
+                }
             }, 3000);
         }
 
@@ -885,7 +1172,7 @@
 
         function limparFormulario() {
             document.getElementById('demandaForm').reset();
-            const hoje = new Date().toISOString().split('T')[0];
+            const hoje = dataLocalStr(new Date());
             document.getElementById('dataDemanda').value = hoje;
         }
 
@@ -909,7 +1196,7 @@
             if (!demanda) return;
             
             const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
-            const texto = `*NOVA DEMANDA DE TRANSPORTE* 🚗\n\n*Solicitante:* ${demanda.solicitante}\n*Setor:* ${demanda.setor}\n*Data:* ${dataFormatada} às ${demanda.horario}\n*Partida:* ${demanda.partida}\n*Destino:* ${demanda.destino}\n*Motorista:* ${demanda.nomeMotorista || 'A definir'}\n*Placa:* ${demanda.placaVeiculo || 'N/A'}\n*Obs:* ${demanda.observacoes || 'Nenhuma'}`;
+            const texto = `*NOVA DEMANDA DE TRANSPORTE* 🚗\n\n*Solicitante:* ${esc(demanda.solicitante)}\n*Setor:* ${esc(demanda.setor)}\n*Data:* ${dataFormatada} às ${esc(demanda.horario)}\n*Partida:* ${esc(demanda.partida)}\n*Destino:* ${esc(demanda.destino)}\n*Motorista:* ${demanda.nomeMotorista || 'A definir'}\n*Placa:* ${demanda.placaVeiculo || 'N/A'}\n*Obs:* ${demanda.observacoes || 'Nenhuma'}`;
             
             window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
         }
@@ -969,6 +1256,184 @@
             }).sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro));
         }
         
+
+        // ====== ÍCONES VETORIAIS (SVG inline, herdam a cor do texto) ======
+        const ICONES = {
+            umbrella: '<path d="M22 12a10.06 10.06 0 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/>',
+            calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+            building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/>',
+            userCheck: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>',
+            users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+            clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+            sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+            checkCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
+            logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+            login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>',
+            trendUp: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+            trendDown: '<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>',
+            minus: '<path d="M5 12h14"/>',
+            pie: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+            lineChart: '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>'
+        };
+        function ico(nome, cls) {
+            return `<svg class="${cls || 'w-4 h-4'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[nome] || ''}</svg>`;
+        }
+        function esc(t) {
+            return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        function dataLocalStr(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // Regressão linear simples: y = a + b·x  (b = inclinação da curva)
+        function calcularRegressao(ys) {
+            const n = ys.length;
+            let sx = 0, sy = 0, sxy = 0, sxx = 0;
+            ys.forEach((y, x) => { sx += x; sy += y; sxy += x * y; sxx += x * x; });
+            const den = n * sxx - sx * sx;
+            const b = den === 0 ? 0 : (n * sxy - sx * sy) / den;
+            const a = n === 0 ? 0 : (sy - b * sx) / n;
+            return { a, b };
+        }
+
+        // Badge colorido com ícone mostrando a inclinação da linha de tendência
+        function htmlBadgeInclinacao(b, unidade) {
+            const num = (b >= 0 ? '+' : '') + b.toFixed(2).replace('.', ',');
+            if (Math.abs(b) < 0.05) return { cls: 'bg-gray-100 text-gray-600', html: `${ico('minus', 'w-3.5 h-3.5')} Estável (${num} ${unidade})` };
+            if (b > 0) return { cls: 'bg-emerald-100 text-emerald-700', html: `${ico('trendUp', 'w-3.5 h-3.5')} Em alta ${num} ${unidade}` };
+            return { cls: 'bg-rose-100 text-rose-700', html: `${ico('trendDown', 'w-3.5 h-3.5')} Em queda ${num} ${unidade}` };
+        }
+        function aplicarBadge(id, b, unidade) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const r = htmlBadgeInclinacao(b, unidade);
+            el.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ' + r.cls;
+            el.innerHTML = r.html;
+        }
+
+        // Opções comuns de curva + tendência
+        function criarGraficoCurva(canvas, rotulos, valores, corLinha, corFill, rotuloSerie, passoInteiro) {
+            const { a, b } = calcularRegressao(valores);
+            const tendencia = valores.map((_, x) => Math.max(0, a + b * x));
+            return {
+                b,
+                chart: new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: rotulos,
+                        datasets: [
+                            {
+                                label: rotuloSerie,
+                                data: valores,
+                                borderColor: corLinha,
+                                backgroundColor: corFill,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 3,
+                                pointRadius: valores.length > 20 ? 2 : 4,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: corLinha,
+                                pointBorderWidth: 2
+                            },
+                            {
+                                label: 'Tendência',
+                                data: tendencia,
+                                borderColor: '#64748b',
+                                borderDash: [6, 6],
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false,
+                                tension: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                            y: { beginAtZero: true, ticks: { precision: 0, stepSize: passoInteiro ? 1 : undefined }, grid: { color: 'rgba(148,163,184,0.2)' } }
+                        }
+                    }
+                })
+            };
+        }
+
+        function renderGraficosTendencia() {
+            const canvasCurva = document.getElementById('chartTendencia');
+            const canvasPizza = document.getElementById('chartStatusPizza');
+            if (!canvasCurva || !canvasPizza || typeof Chart === 'undefined') return;
+
+            const sel = document.getElementById('periodoTendencia');
+            const dias = sel ? parseInt(sel.value) : 15;
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+
+            const chaves = [], rotulos = [];
+            for (let i = dias - 1; i >= 0; i--) {
+                const d = new Date(hoje); d.setDate(hoje.getDate() - i);
+                chaves.push(dataLocalStr(d));
+                rotulos.push(d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+            }
+            const contagem = {};
+            chaves.forEach(k => contagem[k] = 0);
+            const doPeriodo = demandas.filter(d => d.dataDemanda in contagem);
+            doPeriodo.forEach(d => contagem[d.dataDemanda]++);
+            const valores = chaves.map(k => contagem[k]);
+
+            // Curva + tendência
+            if (chartTendenciaInstance) chartTendenciaInstance.destroy();
+            const r = criarGraficoCurva(canvasCurva, rotulos, valores, '#3b82f6', 'rgba(59,130,246,0.15)', 'Demandas', true);
+            chartTendenciaInstance = r.chart;
+            aplicarBadge('badgeInclinacao', r.b, 'demandas/dia');
+
+            const total = valores.reduce((x, y) => x + y, 0);
+            const pico = Math.max(...valores, 0);
+            const elResumo = document.getElementById('resumoTendencia');
+            if (elResumo) elResumo.textContent = `${total} demanda(s) no período, média de ${(total / dias).toFixed(1).replace('.', ',')} por dia e pico de ${pico} em um único dia.`;
+
+            // Pizza de status
+            let pend = 0, conc = 0, canc = 0, outros = 0;
+            doPeriodo.forEach(d => {
+                if (d.status === 'Pendente') pend++;
+                else if (d.status === 'Concluída') conc++;
+                else if (d.status && d.status.indexOf('Cancelada') === 0) canc++;
+                else outros++;
+            });
+            const rotStatus = ['Pendentes', 'Concluídas', 'Canceladas', 'Outros'];
+            const valStatus = [pend, conc, canc, outros];
+            const corStatus = ['#f43f5e', '#10b981', '#94a3b8', '#8b5cf6'];
+            const idx = valStatus.map((v, i) => i).filter(i => valStatus[i] > 0);
+
+            if (chartStatusPizzaInstance) chartStatusPizzaInstance.destroy();
+            const vazio = document.getElementById('vazioStatusPizza');
+            if (vazio) vazio.classList.toggle('hidden', doPeriodo.length > 0);
+            chartStatusPizzaInstance = new Chart(canvasPizza, {
+                type: 'pie',
+                data: {
+                    labels: idx.map(i => rotStatus[i]),
+                    datasets: [{ data: idx.map(i => valStatus[i]), backgroundColor: idx.map(i => corStatus[i]), borderColor: '#fff', borderWidth: 3, hoverOffset: 8 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const tot = ctx.dataset.data.reduce((x, y) => x + y, 0);
+                                    return ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / tot * 100)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         function renderDashboardCharts() {
             let manha = 0, tarde = 0;
             demandas.forEach(d => {
@@ -1041,7 +1506,7 @@
         }
 
         function updateDashboard() {
-            const hoje = new Date().toISOString().split('T')[0];
+            const hoje = dataLocalStr(new Date());
             const demandasHoje = demandas.filter(d => d.dataDemanda === hoje);
             
             document.getElementById('totalDemandas').textContent = demandasHoje.length;
@@ -1055,12 +1520,13 @@
             
             atualizarFiltrosRelatorio();
             renderDashboardCharts();
+            renderGraficosTendencia();
 
             const container = document.getElementById('demandasRecentes');
             if (demandas.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma demanda cadastrada ainda</p>';
             } else {
-                const recentes = demandas.slice(-5).reverse();
+                const recentes = demandas.slice(0, 5);
                 container.innerHTML = recentes.map(demanda => {
                     const motorista = motoristas.find(m => m.nome === demanda.nomeMotorista);
                     const dataFormatada = formatarDataBrasil(demanda.dataDemanda);
@@ -1068,39 +1534,39 @@
                     <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-md text-white hover:shadow-lg transition-shadow border border-white/10">
                         <div class="flex-1">
                             <div class="flex items-center space-x-3">
-                                <span class="text-sm font-bold text-white">${demanda.solicitante}</span>
-                                <span class="text-xs text-indigo-200 px-2 py-0.5 bg-black/20 rounded-full">${demanda.setor}</span>
+                                <span class="text-sm font-bold text-white">${esc(demanda.solicitante)}</span>
+                                <span class="text-xs text-indigo-200 px-2 py-0.5 bg-black/20 rounded-full">${esc(demanda.setor)}</span>
                             </div>
                             <div class="mt-2 text-sm text-indigo-50 font-medium">
-                                ${demanda.partida} <span class="text-indigo-300">→</span> ${demanda.destino}
+                                ${esc(demanda.partida)} <span class="text-indigo-300">→</span> ${esc(demanda.destino)}
                             </div>
                             <div class="mt-1 text-xs text-indigo-200 flex items-center">
                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                                ${dataFormatada} às ${demanda.horario}
+                                ${dataFormatada} às ${esc(demanda.horario)}
                             </div>
                             ${demanda.nomeMotorista ? `
                                 <div class="mt-2 flex items-center space-x-2">
                                     ${motorista && motorista.foto ? 
-                                        `<img class="h-6 w-6 rounded-full object-cover ring-2 ring-white/20" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                        `<img class="h-6 w-6 rounded-full object-cover ring-2 ring-white/20" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` :
                                         `<div class="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
                                             <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                             </svg>
                                         </div>`
                                     }
-                                    <span class="text-xs text-indigo-100 font-medium">${demanda.nomeMotorista}</span>
+                                    <span class="text-xs text-indigo-100 font-medium">${esc(demanda.nomeMotorista)}</span>
                                 </div>
                             ` : ''}
                             
                             <div class="mt-2 text-[11px] text-indigo-100/80 font-medium border-t border-white/10 pt-2 flex items-center flex-wrap gap-2">
                                 <span>👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}</span>
-                                ${demanda.concluidoPor ? `<span class="bg-black/20 px-1.5 py-0.5 rounded text-[10px]">✅ Concluído por: ${demanda.concluidoPor}</span>` : ''}
+                                ${demanda.concluidoPor ? `<span class="bg-black/20 px-1.5 py-0.5 rounded text-[10px]">✅ Concluído por: ${esc(demanda.concluidoPor)}</span>` : ''}
                             </div>
 
                         </div>
                         <div class="flex items-center space-x-2">
                             <span class="px-3 py-1.5 text-xs font-bold rounded-full bg-white/10 text-white border border-white/20 shadow-sm backdrop-blur-sm">
-                                ${demanda.status}
+                                ${esc(demanda.status)}
                             </span>
                         </div>
                     </div>
@@ -1186,9 +1652,9 @@
                                 <div class="flex-shrink-0 w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
                                 <div class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
                                     <div class="flex items-center justify-between mb-2">
-                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <h5 class="text-lg font-semibold text-white">${esc(demanda.horario)}</h5>
                                         <div class="flex items-center space-x-2">
-                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${esc(demanda.status)}</span>
                                             <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
                                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                                             </button>
@@ -1201,27 +1667,27 @@
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <p class="text-yellow-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
-                                            <p class="text-yellow-100"><strong>Setor:</strong> ${demanda.setor}</p>
-                                            <p class="text-yellow-100"><strong>Partida:</strong> ${demanda.partida}</p>
-                                            ${demanda.numeroSei ? `<p class="text-yellow-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                            <p class="text-yellow-100"><strong>Solicitante:</strong> ${esc(demanda.solicitante)}</p>
+                                            <p class="text-yellow-100"><strong>Setor:</strong> ${esc(demanda.setor)}</p>
+                                            <p class="text-yellow-100"><strong>Partida:</strong> ${esc(demanda.partida)}</p>
+                                            ${demanda.numeroSei ? `<p class="text-yellow-100"><strong>Nº SEI:</strong> ${esc(demanda.numeroSei)}</p>` : ''}
                                         </div>
                                         <div>
-                                            <p class="text-yellow-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-yellow-100"><strong>Destino:</strong> ${esc(demanda.destino)}</p>
                                             <p class="text-yellow-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
                                             ${demanda.nomeMotorista ? `
                                                 <div class="flex items-center space-x-2 mt-1">
                                                     <span class="text-yellow-100"><strong>Motorista:</strong></span>
                                                     ${motorista && motorista.foto ? 
-                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` :
                                                         `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
                                                     }
-                                                    <span class="text-yellow-100">${demanda.nomeMotorista}</span>
+                                                    <span class="text-yellow-100">${esc(demanda.nomeMotorista)}</span>
                                                 </div>
                                             ` : '<p class="text-yellow-100"><strong>Motorista:</strong> Não informado</p>'}
                                         </div>
                                     </div>
-                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-yellow-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-yellow-100"><strong>Obs:</strong> ${esc(demanda.observacoes)}</p>` : ''}
                                     
                                     <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
                                         👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
@@ -1254,9 +1720,9 @@
                                 <div class="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
                                 <div class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg p-4 text-white shadow-lg">
                                     <div class="flex items-center justify-between mb-2">
-                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <h5 class="text-lg font-semibold text-white">${esc(demanda.horario)}</h5>
                                         <div class="flex items-center space-x-2">
-                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${esc(demanda.status)}</span>
                                             <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
                                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                                             </button>
@@ -1269,27 +1735,27 @@
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <p class="text-teal-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
-                                            <p class="text-teal-100"><strong>Setor:</strong> ${demanda.setor}</p>
-                                            <p class="text-teal-100"><strong>Partida:</strong> ${demanda.partida}</p>
-                                            ${demanda.numeroSei ? `<p class="text-teal-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                            <p class="text-teal-100"><strong>Solicitante:</strong> ${esc(demanda.solicitante)}</p>
+                                            <p class="text-teal-100"><strong>Setor:</strong> ${esc(demanda.setor)}</p>
+                                            <p class="text-teal-100"><strong>Partida:</strong> ${esc(demanda.partida)}</p>
+                                            ${demanda.numeroSei ? `<p class="text-teal-100"><strong>Nº SEI:</strong> ${esc(demanda.numeroSei)}</p>` : ''}
                                         </div>
                                         <div>
-                                            <p class="text-teal-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-teal-100"><strong>Destino:</strong> ${esc(demanda.destino)}</p>
                                             <p class="text-teal-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
                                             ${demanda.nomeMotorista ? `
                                                 <div class="flex items-center space-x-2 mt-1">
                                                     <span class="text-teal-100"><strong>Motorista:</strong></span>
                                                     ${motorista && motorista.foto ? 
-                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` :
                                                         `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
                                                     }
-                                                    <span class="text-teal-100">${demanda.nomeMotorista}</span>
+                                                    <span class="text-teal-100">${esc(demanda.nomeMotorista)}</span>
                                                 </div>
                                             ` : '<p class="text-teal-100"><strong>Motorista:</strong> Não informado</p>'}
                                         </div>
                                     </div>
-                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-teal-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-teal-100"><strong>Obs:</strong> ${esc(demanda.observacoes)}</p>` : ''}
                                     
                                     <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
                                         👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
@@ -1322,9 +1788,9 @@
                                 <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">${contador++}</div>
                                 <div class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-4 text-white shadow-lg">
                                     <div class="flex items-center justify-between mb-2">
-                                        <h5 class="text-lg font-semibold text-white">${demanda.horario}</h5>
+                                        <h5 class="text-lg font-semibold text-white">${esc(demanda.horario)}</h5>
                                         <div class="flex items-center space-x-2">
-                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${demanda.status}</span>
+                                            <span class="px-3 py-1 text-sm font-medium rounded-full bg-white bg-opacity-20 text-white border border-white border-opacity-30">${esc(demanda.status)}</span>
                                             <button onclick="compartilharWhatsApp('${demanda.id}')" class="p-1 bg-green-500 hover:bg-green-600 rounded-full transition-colors" title="Compartilhar no WhatsApp">
                                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                                             </button>
@@ -1337,27 +1803,27 @@
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <p class="text-indigo-100"><strong>Solicitante:</strong> ${demanda.solicitante}</p>
-                                            <p class="text-indigo-100"><strong>Setor:</strong> ${demanda.setor}</p>
-                                            <p class="text-indigo-100"><strong>Partida:</strong> ${demanda.partida}</p>
-                                            ${demanda.numeroSei ? `<p class="text-indigo-100"><strong>Nº SEI:</strong> ${demanda.numeroSei}</p>` : ''}
+                                            <p class="text-indigo-100"><strong>Solicitante:</strong> ${esc(demanda.solicitante)}</p>
+                                            <p class="text-indigo-100"><strong>Setor:</strong> ${esc(demanda.setor)}</p>
+                                            <p class="text-indigo-100"><strong>Partida:</strong> ${esc(demanda.partida)}</p>
+                                            ${demanda.numeroSei ? `<p class="text-indigo-100"><strong>Nº SEI:</strong> ${esc(demanda.numeroSei)}</p>` : ''}
                                         </div>
                                         <div>
-                                            <p class="text-indigo-100"><strong>Destino:</strong> ${demanda.destino}</p>
+                                            <p class="text-indigo-100"><strong>Destino:</strong> ${esc(demanda.destino)}</p>
                                             <p class="text-indigo-100"><strong>Placa:</strong> ${demanda.placaVeiculo || 'Não informado'}</p>
                                             ${demanda.nomeMotorista ? `
                                                 <div class="flex items-center space-x-2 mt-1">
                                                     <span class="text-indigo-100"><strong>Motorista:</strong></span>
                                                     ${motorista && motorista.foto ? 
-                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                                        `<img class="h-6 w-6 rounded-full object-cover" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` :
                                                         `<div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
                                                     }
-                                                    <span class="text-indigo-100">${demanda.nomeMotorista}</span>
+                                                    <span class="text-indigo-100">${esc(demanda.nomeMotorista)}</span>
                                                 </div>
                                             ` : '<p class="text-indigo-100"><strong>Motorista:</strong> Não informado</p>'}
                                         </div>
                                     </div>
-                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-indigo-100"><strong>Obs:</strong> ${demanda.observacoes}</p>` : ''}
+                                    ${demanda.observacoes ? `<p class="mt-2 text-sm text-indigo-100"><strong>Obs:</strong> ${esc(demanda.observacoes)}</p>` : ''}
                                     
                                     <div class="mt-3 pt-3 border-t border-white/20 text-xs text-white/90 font-medium">
                                         👤 Cadastrado por: ${demanda.cadastradoPor || 'Sistema'}
@@ -1422,7 +1888,7 @@
                         <div class="flex items-center space-x-1 tv-sm:space-x-2">
                             <div class="w-2 h-2 tv-sm:w-3 tv-sm:h-3 bg-gradient-to-r from-slate-600 to-gray-700 rounded-full"></div>
                             <div class="flex flex-col">
-                                <span class="text-xs tv-sm:text-sm tv-md:text-base font-bold text-gray-900">${demanda.horario}</span>
+                                <span class="text-xs tv-sm:text-sm tv-md:text-base font-bold text-gray-900">${esc(demanda.horario)}</span>
                                 <span class="text-xs text-gray-600 font-medium">${dataFormatada}</span>
                             </div>
                         </div>
@@ -1433,30 +1899,30 @@
                         </div>
                     </td>
                     <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
-                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${demanda.destino}</div>
+                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${esc(demanda.destino)}</div>
                         <div class="text-gray-600 text-xs tv-sm:text-sm font-medium flex items-center">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            de ${demanda.partida}
+                            de ${esc(demanda.partida)}
                         </div>
                     </td>
                     <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap hidden md:table-cell">
-                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${demanda.solicitante}</div>
+                        <div class="font-bold text-gray-900 text-xs tv-sm:text-sm tv-md:text-base">${esc(demanda.solicitante)}</div>
                         <div class="text-gray-600 text-xs tv-sm:text-sm font-medium flex items-center">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h-2v-2h-2V9h8v10z"/></svg>
-                            ${demanda.setor}
+                            ${esc(demanda.setor)}
                         </div>
                     </td>
                     <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap text-xs tv-sm:text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        ${demanda.numeroSei ? `<div class="px-2 py-1 bg-gradient-to-r from-slate-500 to-gray-600 text-white text-xs font-bold rounded">${demanda.numeroSei}</div>` : '<span class="text-gray-400">-</span>'}
+                        ${demanda.numeroSei ? `<div class="px-2 py-1 bg-gradient-to-r from-slate-500 to-gray-600 text-white text-xs font-bold rounded">${esc(demanda.numeroSei)}</div>` : '<span class="text-gray-400">-</span>'}
                     </td>
                     <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap text-xs tv-sm:text-sm font-bold text-gray-900 hidden lg:table-cell">
-                        ${demanda.placaVeiculo ? `<div class="px-2 py-1 bg-gradient-to-r from-blue-600 to-slate-700 text-white text-xs font-bold rounded flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>${demanda.placaVeiculo}</div>` : '<span class="text-gray-400">-</span>'}
+                        ${demanda.placaVeiculo ? `<div class="px-2 py-1 bg-gradient-to-r from-blue-600 to-slate-700 text-white text-xs font-bold rounded flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>${esc(demanda.placaVeiculo)}</div>` : '<span class="text-gray-400">-</span>'}
                     </td>
                     <td class="px-3 tv-sm:px-4 tv-md:px-6 py-3 tv-sm:py-4 whitespace-nowrap">
                         ${demanda.nomeMotorista ? `
                             <div class="flex items-center space-x-2 tv-sm:space-x-3 px-2 tv-sm:px-3 py-1 tv-sm:py-2 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg">
-                                ${motorista && motorista.foto ? `<img class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full object-cover border-2 border-white shadow-md" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` : `<div class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full bg-white flex items-center justify-center shadow-md"><svg class="h-3 w-3 tv-sm:h-4 tv-sm:w-4 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`}
-                                <span class="text-white font-bold text-xs tv-sm:text-sm hidden sm:inline">${demanda.nomeMotorista}</span>
+                                ${motorista && motorista.foto ? `<img class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full object-cover border-2 border-white shadow-md" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` : `<div class="h-6 w-6 tv-sm:h-8 tv-sm:w-8 rounded-full bg-white flex items-center justify-center shadow-md"><svg class="h-3 w-3 tv-sm:h-4 tv-sm:w-4 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`}
+                                <span class="text-white font-bold text-xs tv-sm:text-sm hidden sm:inline">${esc(demanda.nomeMotorista)}</span>
                             </div>
                         ` : '<span class="text-gray-400 font-medium text-xs tv-sm:text-sm">-</span>'}
                     </td>
@@ -1610,8 +2076,8 @@
                     <div class="p-4">
                         <p class="text-gray-700 text-sm mb-2">Confirmar exclusão da demanda:</p>
                         <div class="bg-gray-50 rounded p-3 mb-3">
-                            <p class="font-medium text-gray-900">${solicitante}</p>
-                            <p class="text-sm text-gray-600">${horario}</p>
+                            <p class="font-medium text-gray-900">${esc(solicitante)}</p>
+                            <p class="text-sm text-gray-600">${esc(horario)}</p>
                         </div>
                         <p class="text-xs text-gray-500">Esta ação não pode ser desfeita.</p>
                     </div>
@@ -1674,23 +2140,43 @@
             });
         }
 
-        document.getElementById('motoristaForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const fileInput = document.getElementById('fotoMotorista');
-            const file = fileInput.files[0];
-            
-            let fotoBase64 = '';
-            if (file) {
+        // Reduz a foto (máx. 256px, JPEG) para caber no limite de 1 MB por documento do Firestore
+        function comprimirImagem(file, maxLado = 256, qualidade = 0.8) {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    fotoBase64 = e.target.result;
-                    salvarMotorista(formData.get('nomeMotoristaForm'), fotoBase64);
+                reader.onerror = () => reject(new Error('Falha ao ler a imagem'));
+                reader.onload = ev => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('Imagem inválida'));
+                    img.onload = () => {
+                        const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.round(img.width * escala);
+                        canvas.height = Math.round(img.height * escala);
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', qualidade));
+                    };
+                    img.src = ev.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else {
-                salvarMotorista(formData.get('nomeMotoristaForm'), '');
+            });
+        }
+
+        document.getElementById('motoristaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const file = document.getElementById('fotoMotorista').files[0];
+            let fotoBase64 = '';
+            if (file) {
+                try {
+                    fotoBase64 = await comprimirImagem(file);
+                } catch (err) {
+                    console.error(err);
+                    mostrarMensagem('Não foi possível processar a foto.', 'error');
+                    return;
+                }
             }
+            salvarMotorista(formData.get('nomeMotoristaForm'), fotoBase64);
         });
 
         async function salvarMotorista(nome, foto) {
@@ -1792,12 +2278,12 @@
                 <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                     <div class="flex-shrink-0">
                         ${motorista.foto ? 
-                            `<img class="h-12 w-12 rounded-full object-cover" src="${motorista.foto}" alt="${motorista.nome}">` :
+                            `<img class="h-12 w-12 rounded-full object-cover" src="${esc(motorista.foto)}" alt="${esc(motorista.nome)}">` :
                             `<div class="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center"><svg class="h-6 w-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`
                         }
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-sm font-medium text-gray-900">${motorista.nome}</h4>
+                        <h4 class="text-sm font-medium text-gray-900">${esc(motorista.nome)}</h4>
                         <p class="text-xs text-gray-500">Cadastrado em ${new Date(motorista.dataCadastro).toLocaleDateString('pt-BR')}</p>
                     </div>
                     <button onclick="removerMotorista('${motorista.id}')" class="text-red-600 hover:text-red-800">
@@ -1848,6 +2334,7 @@
                 anoAtual--;
             }
             updateCalendario();
+            updateCalendarioFerias(); // Garante que o calendário de férias navegue junto
         }
 
         function updateCalendario() {
@@ -1875,7 +2362,7 @@
             
             for (let dia = 1; dia <= diasNoMes; dia++) {
                 const dataAtual = new Date(anoAtual, mesAtual, dia);
-                const dataString = dataAtual.toISOString().split('T')[0];
+                const dataString = dataLocalStr(dataAtual);
                 const demandasDoDia = demandas.filter(d => d.dataDemanda === dataString);
                 const estaNaSemanaAtual = dataAtual >= inicioSemanaAtual && dataAtual <= fimSemanaAtual;
                 
@@ -1977,56 +2464,56 @@
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                                    <span class="text-lg font-bold text-gray-900">${demanda.horario}</span>
+                                    <span class="text-lg font-bold text-gray-900">${esc(demanda.horario)}</span>
                                 </div>
                             </div>
-                            <span class="px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(demanda.status)}">${demanda.status}</span>
+                            <span class="px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(demanda.status)}">${esc(demanda.status)}</span>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div class="space-y-2">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                                    <span class="text-gray-700"><strong>Solicitante:</strong> ${demanda.solicitante}</span>
+                                    <span class="text-gray-700"><strong>Solicitante:</strong> ${esc(demanda.solicitante)}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h-2v-2h-2V9h8v10z"/></svg>
-                                    <span class="text-gray-700"><strong>Setor:</strong> ${demanda.setor}</span>
+                                    <span class="text-gray-700"><strong>Setor:</strong> ${esc(demanda.setor)}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                                    <span class="text-gray-700"><strong>Partida:</strong> ${demanda.partida}</span>
+                                    <span class="text-gray-700"><strong>Partida:</strong> ${esc(demanda.partida)}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    <span class="text-gray-700"><strong>Destino:</strong> ${demanda.destino}</span>
+                                    <span class="text-gray-700"><strong>Destino:</strong> ${esc(demanda.destino)}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 ${demanda.nomeMotorista ? `
                                     <div class="flex items-center space-x-2">
                                         ${motorista && motorista.foto ? 
-                                            `<img class="w-6 h-6 rounded-full object-cover" src="${motorista.foto}" alt="${demanda.nomeMotorista}">` :
+                                            `<img class="w-6 h-6 rounded-full object-cover" src="${esc(motorista.foto)}" alt="${esc(demanda.nomeMotorista)}">` :
                                             `<svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H15V9H21ZM15 11H9C7.9 11 7 11.9 7 13V22H9V18H15V22H17V13C17 11.9 16.1 11 15 11Z"/></svg>`
                                         }
-                                        <span class="text-gray-700"><strong>Motorista:</strong> ${demanda.nomeMotorista}</span>
+                                        <span class="text-gray-700"><strong>Motorista:</strong> ${esc(demanda.nomeMotorista)}</span>
                                     </div>
                                 ` : ''}
                                 ${demanda.placaVeiculo ? `
                                     <div class="flex items-center space-x-2">
                                         <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
-                                        <span class="text-gray-700"><strong>Placa:</strong> ${demanda.placaVeiculo}</span>
+                                        <span class="text-gray-700"><strong>Placa:</strong> ${esc(demanda.placaVeiculo)}</span>
                                     </div>
                                 ` : ''}
                                 ${demanda.numeroSei ? `
                                     <div class="flex items-center space-x-2">
                                         <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
-                                        <span class="text-gray-700"><strong>Nº SEI:</strong> ${demanda.numeroSei}</span>
+                                        <span class="text-gray-700"><strong>Nº SEI:</strong> ${esc(demanda.numeroSei)}</span>
                                     </div>
                                 ` : ''}
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-                                    <span class="text-gray-700"><strong>Status:</strong> ${demanda.status}</span>
+                                    <span class="text-gray-700"><strong>Status:</strong> ${esc(demanda.status)}</span>
                                 </div>
                                 
                                 <div class="flex items-center space-x-2 pt-2">
@@ -2036,7 +2523,7 @@
                                 ${demanda.status === 'Concluída' && demanda.concluidoPor ? `
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                    <span class="text-gray-700"><strong>Concluído por:</strong> ${demanda.concluidoPor}</span>
+                                    <span class="text-gray-700"><strong>Concluído por:</strong> ${esc(demanda.concluidoPor)}</span>
                                 </div>
                                 ` : ''}
 
@@ -2046,7 +2533,7 @@
                             <div class="mt-3 pt-3 border-t border-gray-200">
                                 <div class="flex items-start space-x-2">
                                     <svg class="w-4 h-4 text-gray-600 mt-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                                    <div><span class="text-gray-700 font-medium">Observações:</span><p class="text-gray-600 text-sm mt-1">${demanda.observacoes}</p></div>
+                                    <div><span class="text-gray-700 font-medium">Observações:</span><p class="text-gray-600 text-sm mt-1">${esc(demanda.observacoes)}</p></div>
                                 </div>
                             </div>
                         ` : ''}
@@ -2086,6 +2573,461 @@
             document.body.appendChild(modal);
         }
 
+        // ====== FUNÇÕES DO CONTROLE DE FÉRIAS ======
+        
+        function abrirModalFerias() {
+            document.getElementById('formFerias').reset();
+            document.getElementById('modalCadastrarFerias').classList.remove('hidden');
+        }
+
+        function fecharModalFerias() {
+            document.getElementById('modalCadastrarFerias').classList.add('hidden');
+        }
+
+        async function salvarFerias(e) {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.innerHTML = 'Salvando...';
+            btnSubmit.disabled = true;
+
+            const inicio = document.getElementById('dataInicioFerias').value;
+            const fim = document.getElementById('dataFimFerias').value;
+
+            if (fim < inicio) {
+                mostrarMensagem('A Data Final não pode ser anterior à Data de Início.', 'error');
+                btnSubmit.innerHTML = 'Salvar Registro';
+                btnSubmit.disabled = false;
+                return;
+            }
+
+            const registro = {
+                funcionario: document.getElementById('nomeFuncionarioFerias').value.trim(),
+                lotacao: document.getElementById('lotacaoFerias').value.trim(),
+                dataInicio: inicio,
+                dataFim: fim,
+                substituto: document.getElementById('substitutoFerias').value.trim(),
+                cadastradoPor: usuarioLogado,
+                dataCadastro: new Date().toISOString()
+            };
+
+            try {
+                await db.collection('ferias').add(registro);
+                mostrarMensagem('Férias lançadas com sucesso!', 'success');
+                fecharModalFerias();
+            } catch (error) {
+                console.error("Erro ao salvar férias: ", error);
+                mostrarMensagem('Erro ao cadastrar férias.', 'error');
+            } finally {
+                btnSubmit.innerHTML = 'Salvar Registro';
+                btnSubmit.disabled = false;
+            }
+        }
+
+        // ----- Setores / filtro de unidades -----
+        const SETORES_FERIAS = {
+            CT:        { nome: 'Conselho Tutelar (CT)', cor: '#f97316' },
+            CRAS:      { nome: 'CRAS', cor: '#14b8a6' },
+            CREAS:     { nome: 'CREAS', cor: '#0ea5e9' },
+            CONSELHOS: { nome: 'Conselhos de Direito (CMDCA, CMDI, CMAS)', cor: '#8b5cf6' },
+            OUTROS:    { nome: 'Outros', cor: '#94a3b8' }
+        };
+        const ROTULOS_FILTRO_FERIAS = {
+            '': 'Geral (todas as unidades)',
+            controle: 'Somente CT, CRAS, CREAS e Conselhos de Direito',
+            CT: 'Somente Conselho Tutelar (CT)',
+            CRAS: 'Somente CRAS',
+            CREAS: 'Somente CREAS',
+            CONSELHOS: 'Somente Conselhos de Direito (CMDCA, CMDI, CMAS)',
+            OUTROS: 'Somente Outros'
+        };
+
+        function normalizarTexto(t) {
+            return String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+        }
+
+        // Classifica a lotação (texto livre) em um dos setores de controle
+        function categoriaUnidade(lotacao) {
+            const t = normalizarTexto(lotacao);
+            if (/\b(CMDCA|CMDI|CMAS)\b|CONSELHO MUNICIPAL|CONSELHOS? DE DIREITOS?/.test(t)) return 'CONSELHOS';
+            if (/\bCT\b|CONSELHO TUTELAR/.test(t)) return 'CT';
+            if (/\bCREAS\b/.test(t)) return 'CREAS';
+            if (/\bCRAS\b/.test(t)) return 'CRAS';
+            return 'OUTROS';
+        }
+
+        function feriasFiltradas() {
+            if (!filtroFeriasUnidade) return ferias;
+            return ferias.filter(f => {
+                const c = categoriaUnidade(f.lotacao);
+                return filtroFeriasUnidade === 'controle' ? c !== 'OUTROS' : c === filtroFeriasUnidade;
+            });
+        }
+
+        function aplicarFiltroFerias(valor) {
+            filtroFeriasUnidade = valor || '';
+            updateCalendarioFerias();
+        }
+
+        function feriasNoDia(dataString) {
+            return feriasFiltradas().filter(f => dataString >= f.dataInicio && dataString <= f.dataFim);
+        }
+
+        function updateCalendarioFerias() {
+            const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const elHeader = document.getElementById('mesAnoAtualFerias');
+            if(elHeader) elHeader.textContent = `${nomesMeses[mesAtual]} ${anoAtual}`;
+
+            const primeiroDia = new Date(anoAtual, mesAtual, 1);
+            const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+            const diasNoMes = ultimoDia.getDate();
+            const diaSemanaInicio = primeiroDia.getDay();
+            const hojeStr = dataLocalStr(new Date());
+
+            const grid = document.getElementById('calendarioFeriasGrid');
+            if(!grid) return;
+
+            grid.innerHTML = '';
+
+            for (let i = 0; i < diaSemanaInicio; i++) {
+                const diaVazio = document.createElement('div');
+                diaVazio.className = 'min-h-[100px] tv-sm:min-h-[130px] bg-gray-50';
+                grid.appendChild(diaVazio);
+            }
+
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                const dataString = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                const feriasDoDia = feriasNoDia(dataString);
+                const ehHoje = dataString === hojeStr;
+
+                const diaElement = document.createElement('div');
+                diaElement.className = `min-h-[100px] tv-sm:min-h-[130px] p-2 relative bg-white transition-colors hover:bg-orange-50/30 ${feriasDoDia.length > 0 ? 'cursor-pointer' : ''}`;
+
+                const topo = document.createElement('div');
+                topo.className = 'flex items-center justify-between mb-1';
+                topo.innerHTML = `
+                    <span class="text-sm font-bold ${ehHoje ? 'bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-700'}">${dia}</span>
+                    ${feriasDoDia.length > 0 ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-orange-600" title="${feriasDoDia.length} pessoa(s) de férias">${ico('users', 'w-3 h-3')}${feriasDoDia.length}</span>` : ''}
+                `;
+                diaElement.appendChild(topo);
+
+                if (feriasDoDia.length > 0) {
+                    const stack = document.createElement('div');
+                    stack.className = 'space-y-1.5 mt-1';
+
+                    feriasDoDia.slice(0, 3).forEach(f => {
+                        const ehInicio = dataString === f.dataInicio;
+                        const ehFim = dataString === f.dataFim;
+                        const barra = document.createElement('div');
+                        barra.className = 'bg-orange-100 border border-orange-200 text-orange-800 text-[10px] sm:text-xs px-1.5 py-0.5 rounded leading-tight shadow-sm';
+                        barra.title = `Férias de ${f.funcionario} (${f.lotacao})\nSubstituto: ${f.substituto}`;
+                        barra.innerHTML = `
+                            <span class="flex items-center gap-1 font-bold min-w-0">
+                                <span class="text-orange-500 flex-shrink-0">${ico('umbrella', 'w-3 h-3')}</span>
+                                <span class="truncate">${esc(f.funcionario)}</span>
+                                ${ehInicio ? `<span class="ml-auto flex-shrink-0 text-emerald-600" title="Primeiro dia de férias">${ico('logout', 'w-3 h-3')}</span>` : ''}
+                                ${ehFim ? `<span class="ml-auto flex-shrink-0 text-sky-600" title="Último dia de férias">${ico('login', 'w-3 h-3')}</span>` : ''}
+                            </span>`;
+                        stack.appendChild(barra);
+                    });
+
+                    if (feriasDoDia.length > 3) {
+                        const mais = document.createElement('div');
+                        mais.className = 'text-[10px] text-orange-600 font-bold px-1';
+                        mais.textContent = `+${feriasDoDia.length - 3} pessoa(s)`;
+                        stack.appendChild(mais);
+                    }
+
+                    diaElement.appendChild(stack);
+                    diaElement.addEventListener('click', () => mostrarDetalhesFerias(dataString, feriasDoDia));
+                }
+
+                grid.appendChild(diaElement);
+            }
+
+            const celulasRestantes = 42 - grid.children.length;
+            for (let i = 0; i < celulasRestantes; i++) {
+                const diaVazio = document.createElement('div');
+                diaVazio.className = 'min-h-[100px] tv-sm:min-h-[130px] bg-gray-50';
+                grid.appendChild(diaVazio);
+            }
+
+            renderFeriasResumo();
+            renderFeriasGraficos();
+        }
+
+        function renderFeriasResumo() {
+            const icones = { kpiFeriasHoje: 'umbrella', kpiFeriasMes: 'calendar', kpiFeriasProx: 'clock', kpiFeriasUnid: 'building' };
+            Object.keys(icones).forEach(id => {
+                const el = document.getElementById('icoKpi_' + id);
+                if (el && !el.innerHTML) el.innerHTML = ico(icones[id], 'w-6 h-6');
+            });
+            const leg = document.getElementById('legendaFerias');
+            if (leg && !leg.innerHTML) {
+                leg.innerHTML = `
+                    <span class="inline-flex items-center gap-1.5"><span class="text-orange-500">${ico('umbrella', 'w-4 h-4')}</span>Pessoa de férias</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="text-emerald-600">${ico('logout', 'w-4 h-4')}</span>Primeiro dia</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="text-sky-600">${ico('login', 'w-4 h-4')}</span>Último dia</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="inline-block w-5 h-5 rounded-full bg-orange-500"></span>Hoje</span>`;
+            }
+            ['icoCurvaFerias:lineChart', 'icoPizzaFerias:pie'].forEach(par => {
+                const [id, nome] = par.split(':');
+                const el = document.getElementById(id);
+                if (el && !el.innerHTML) el.innerHTML = ico(nome, 'w-5 h-5');
+            });
+
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            const hojeStr = dataLocalStr(hoje);
+            const em30 = new Date(hoje); em30.setDate(em30.getDate() + 30);
+            const em30Str = dataLocalStr(em30);
+            const pad = n => String(n).padStart(2, '0');
+            const iniMes = `${anoAtual}-${pad(mesAtual + 1)}-01`;
+            const fimMes = `${anoAtual}-${pad(mesAtual + 1)}-${pad(new Date(anoAtual, mesAtual + 1, 0).getDate())}`;
+
+            const hojeLista = feriasNoDia(hojeStr);
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('kpiFeriasHoje', hojeLista.length);
+            set('kpiFeriasMes', feriasFiltradas().filter(f => f.dataInicio <= fimMes && f.dataFim >= iniMes).length);
+            set('kpiFeriasProx', feriasFiltradas().filter(f => f.dataInicio > hojeStr && f.dataInicio <= em30Str).length);
+            set('kpiFeriasUnid', new Set(hojeLista.map(f => (f.lotacao || '').trim().toLowerCase())).size);
+        }
+
+        function renderFeriasGraficos() {
+            const canvasCurva = document.getElementById('chartFeriasCurva');
+            const canvasPizza = document.getElementById('chartFeriasPizza');
+            if (!canvasCurva || !canvasPizza || typeof Chart === 'undefined') return;
+
+            const pad = n => String(n).padStart(2, '0');
+            const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+            const rotulos = [], valores = [];
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                rotulos.push(pad(dia));
+                valores.push(feriasNoDia(`${anoAtual}-${pad(mesAtual + 1)}-${pad(dia)}`).length);
+            }
+
+            if (chartFeriasCurvaInstance) chartFeriasCurvaInstance.destroy();
+            const r = criarGraficoCurva(canvasCurva, rotulos, valores, '#f97316', 'rgba(249,115,22,0.15)', 'Pessoas de férias', true);
+            chartFeriasCurvaInstance = r.chart;
+            aplicarBadge('badgeInclinacaoFerias', r.b, 'pessoas/dia');
+
+            // Pizza por setor (registros que tocam o mês exibido, respeitando o filtro)
+            const iniMes = `${anoAtual}-${pad(mesAtual + 1)}-01`;
+            const fimMes = `${anoAtual}-${pad(mesAtual + 1)}-${pad(diasNoMes)}`;
+            const doMes = feriasFiltradas().filter(f => f.dataInicio <= fimMes && f.dataFim >= iniMes);
+            const porSetor = {};
+            doMes.forEach(f => { const c = categoriaUnidade(f.lotacao); porSetor[c] = (porSetor[c] || 0) + 1; });
+            const lista = Object.keys(SETORES_FERIAS)
+                .filter(k => porSetor[k] > 0)
+                .map(k => ({ nome: SETORES_FERIAS[k].nome, qtd: porSetor[k], cor: SETORES_FERIAS[k].cor }));
+
+            if (chartFeriasPizzaInstance) chartFeriasPizzaInstance.destroy();
+            const vazio = document.getElementById('vazioFeriasPizza');
+            if (vazio) vazio.classList.toggle('hidden', doMes.length > 0);
+            chartFeriasPizzaInstance = new Chart(canvasPizza, {
+                type: 'pie',
+                data: {
+                    labels: lista.map(x => x.nome),
+                    datasets: [{ data: lista.map(x => x.qtd), backgroundColor: lista.map(x => x.cor), borderColor: '#fff', borderWidth: 3, hoverOffset: 8 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, boxWidth: 8 } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const tot = ctx.dataset.data.reduce((x, y) => x + y, 0);
+                                    return ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / tot * 100)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function mostrarDetalhesFerias(dataStr, feriasLista) {
+            const dataObj = criarDataBrasilia(dataStr);
+            const titulo = document.getElementById('tituloDetalhesFerias');
+            titulo.innerHTML = `<span class="mr-2 text-orange-300">${ico('umbrella', 'w-6 h-6')}</span>Férias em ${dataObj.toLocaleDateString('pt-BR')}`;
+
+            const container = document.getElementById('conteudoDetalhesFerias');
+            const hojeStr = dataLocalStr(new Date());
+            const diffDias = (a, b) => Math.round((criarDataBrasilia(b) - criarDataBrasilia(a)) / 86400000);
+
+            let html = '';
+            feriasLista.forEach(f => {
+                const dtInicio = formatarDataBrasil(f.dataInicio);
+                const dtFim = formatarDataBrasil(f.dataFim);
+                const duracao = diffDias(f.dataInicio, f.dataFim) + 1;
+
+                let st;
+                if (hojeStr < f.dataInicio) st = { txt: `Começa em ${diffDias(hojeStr, f.dataInicio)} dia(s)`, cls: 'bg-sky-100 text-sky-700', ic: 'clock' };
+                else if (hojeStr > f.dataFim) st = { txt: 'Concluídas', cls: 'bg-gray-100 text-gray-600', ic: 'checkCircle' };
+                else st = { txt: `Em curso, retorna em ${diffDias(hojeStr, f.dataFim) + 1} dia(s)`, cls: 'bg-emerald-100 text-emerald-700', ic: 'sun' };
+
+                html += `
+                    <div class="p-5 hover:bg-orange-50/50 transition-colors">
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="min-w-0">
+                                <h4 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="text-orange-500 flex-shrink-0">${ico('umbrella', 'w-5 h-5')}</span>${esc(f.funcionario)}
+                                </h4>
+                                <span class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-xs font-bold ${st.cls}">${ico(st.ic, 'w-3.5 h-3.5')}${st.txt}</span>
+                                <div class="mt-3 space-y-2">
+                                    <p class="text-sm text-gray-700 flex items-center gap-2"><span class="text-gray-400">${ico('building', 'w-4 h-4')}</span><strong class="text-gray-500">Unidade:</strong> ${esc(f.lotacao)}</p>
+                                    <p class="text-sm text-gray-700 flex items-center gap-2"><span class="text-gray-400">${ico('calendar', 'w-4 h-4')}</span><strong class="text-gray-500">Período:</strong> ${dtInicio} até ${dtFim} <span class="text-xs text-gray-400">(${duracao} dia${duracao > 1 ? 's' : ''})</span></p>
+                                    <p class="text-sm text-gray-700 flex items-center gap-2">
+                                        <span class="text-gray-400">${ico('userCheck', 'w-4 h-4')}</span>
+                                        <strong class="text-gray-500">Substituto:</strong>
+                                        <span class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs font-bold">${esc(f.substituto)}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button onclick="excluirFerias('${f.id}')" class="flex-shrink-0 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Excluir Registro">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            </button>
+                        </div>
+                        <div class="mt-3 text-[10px] text-gray-400">Registrado por: ${esc(f.cadastradoPor)}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('modalDetalhesFerias').classList.remove('hidden');
+        }
+
+        function gerarRelatorioFerias() {
+            const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const pad = n => String(n).padStart(2, '0');
+            const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+            const iniMes = `${anoAtual}-${pad(mesAtual + 1)}-01`;
+            const fimMes = `${anoAtual}-${pad(mesAtual + 1)}-${pad(diasNoMes)}`;
+            const diffDias = (a, b) => Math.round((criarDataBrasilia(b) - criarDataBrasilia(a)) / 86400000);
+
+            const lista = feriasFiltradas()
+                .filter(f => f.dataInicio <= fimMes && f.dataFim >= iniMes)
+                .sort((a, b) => String(a.funcionario).localeCompare(String(b.funcionario), 'pt-BR'));
+
+            const porSetor = {};
+            lista.forEach(f => { const c = categoriaUnidade(f.lotacao); porSetor[c] = (porSetor[c] || 0) + 1; });
+
+            const linhasResumo = Object.keys(SETORES_FERIAS)
+                .filter(k => porSetor[k] > 0)
+                .map(k => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${SETORES_FERIAS[k].cor};margin-right:8px;"></span>${esc(SETORES_FERIAS[k].nome)}</td><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:bold;">${porSetor[k]}</td></tr>`)
+                .join('');
+
+            let imgPizza = '';
+            try {
+                const cv = document.getElementById('chartFeriasPizza');
+                if (cv && lista.length > 0) imgPizza = cv.toDataURL('image/png');
+            } catch (e) { console.warn('Não foi possível capturar o gráfico', e); }
+
+            const linhas = lista.length === 0
+                ? '<tr><td colspan="8" style="padding:18px;text-align:center;color:#6b7280;">Nenhum servidor de férias neste mês com o filtro selecionado.</td></tr>'
+                : lista.map((f, i) => {
+                    const ini = f.dataInicio > iniMes ? f.dataInicio : iniMes;
+                    const fim = f.dataFim < fimMes ? f.dataFim : fimMes;
+                    const diasMes = diffDias(ini, fim) + 1;
+                    const diasTotal = diffDias(f.dataInicio, f.dataFim) + 1;
+                    return `<tr>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;color:#6b7280;">${i + 1}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-weight:bold;">${esc(f.funcionario)}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${esc(f.lotacao)}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${esc(SETORES_FERIAS[categoriaUnidade(f.lotacao)].nome)}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap;">${formatarDataBrasil(f.dataInicio)}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap;">${formatarDataBrasil(f.dataFim)}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;">${diasMes}${diasMes !== diasTotal ? ` <span style="color:#6b7280;font-size:11px;">(de ${diasTotal})</span>` : ''}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${esc(f.substituto)}</td>
+                    </tr>`;
+                }).join('');
+
+            const titulo = `Relatório de Férias - ${nomesMeses[mesAtual]} ${anoAtual}`;
+            const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${esc(titulo)}</title>
+<style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background:#f3f4f6; color:#374151; margin:0; padding:24px; }
+    .container { max-width: 1100px; margin: 0 auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,.1); }
+    .header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:3px solid #ea580c; padding-bottom:12px; margin-bottom:16px; }
+    h1 { margin:0; font-size:20px; text-transform:uppercase; color:#1f2937; }
+    h2 { margin:4px 0 0; font-size:16px; font-weight:normal; color:#4b5563; }
+    .btn { padding:9px 16px; border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer; font-size:14px; }
+    .filtro { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:8px 12px; border-radius:6px; font-size:13px; margin-bottom:16px; }
+    table.dados { width:100%; border-collapse:collapse; font-size:13px; }
+    table.dados th { background:#374151; color:#fff; text-align:left; padding:9px 8px; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .resumo { display:flex; gap:24px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+    .resumo table { border-collapse:collapse; font-size:13px; min-width:300px; }
+    .rodape { margin-top:18px; font-size:11px; color:#6b7280; text-align:center; }
+    @media print {
+        .no-print { display:none !important; }
+        body { background:#fff; padding:0; }
+        .container { box-shadow:none; padding:0; max-width:100%; }
+        @page { size: A4; margin: 1.2cm; }
+        tr { page-break-inside: avoid; }
+        thead { display: table-header-group; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>TRANSPORTE &amp; DEMANDAS - SEMCAS</h1>
+            <h2>${esc(titulo)}</h2>
+        </div>
+        <div class="no-print">
+            <button class="btn" style="background:#dc2626;" onclick="window.print()">Imprimir / Salvar PDF</button>
+            <button class="btn" style="background:#6b7280;margin-left:8px;" onclick="window.close()">Fechar</button>
+        </div>
+    </div>
+    <div class="filtro"><strong>Filtro de unidades:</strong> ${esc(ROTULOS_FILTRO_FERIAS[filtroFeriasUnidade] || ROTULOS_FILTRO_FERIAS[''])} &nbsp;|&nbsp; <strong>Total de servidores de férias no mês:</strong> ${lista.length}</div>
+    ${lista.length > 0 ? `<div class="resumo">
+        <table>
+            <thead><tr><th style="background:#374151;color:#fff;padding:7px 10px;text-align:left;">Setor</th><th style="background:#374151;color:#fff;padding:7px 10px;text-align:right;">Servidores</th></tr></thead>
+            <tbody>${linhasResumo}</tbody>
+        </table>
+        ${imgPizza ? `<img src="${imgPizza}" alt="Gráfico de férias por setor" style="max-width:340px;height:auto;">` : ''}
+    </div>` : ''}
+    <table class="dados">
+        <thead><tr>
+            <th style="width:32px;text-align:center;">Nº</th><th>Servidor</th><th>Unidade/Lotação</th><th>Setor</th><th>Início</th><th>Fim</th><th style="text-align:center;">Dias no mês</th><th>Substituto</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+    </table>
+    <div class="rodape">Gerado em ${new Date().toLocaleString('pt-BR')} por ${esc(usuarioLogado)} | TransportHub</div>
+</div>
+</body>
+</html>`;
+
+            const janela = window.open('', '_blank');
+            if (!janela) {
+                mostrarMensagem('O navegador bloqueou a nova janela. Permita pop-ups para gerar o relatório.', 'error');
+                return;
+            }
+            janela.document.write(html);
+            janela.document.close();
+        }
+
+        async function excluirFerias(id) {
+            if(!confirm("Tem certeza que deseja excluir este registro de férias permanentemente?")) return;
+            
+            try {
+                await db.collection('ferias').doc(id).delete();
+                mostrarMensagem('Registro de férias excluído!', 'success');
+                document.getElementById('modalDetalhesFerias').classList.add('hidden');
+            } catch(e) {
+                console.error(e);
+                mostrarMensagem('Erro ao excluir as férias', 'error');
+            }
+        }
+        
+        // ==========================================
+
         function gerarTabelaRelatorio() {
             const concluidas = getDemandasConcluidas();
             let tbody = '';
@@ -2097,10 +3039,10 @@
                     tbody += `
                         <tr style="border-bottom: 1px solid #e5e7eb; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='transparent'">
                             <td style="padding: 12px 8px; font-size: 14px;">${formatarDataBrasil(d.dataDemanda)}</td>
-                            <td style="padding: 12px 8px; font-size: 14px; font-weight: bold;">${d.horario}</td>
-                            <td style="padding: 12px 8px; font-size: 14px;">${d.solicitante}<br><span style="font-size: 12px; color: #6b7280;">${d.setor}</span></td>
-                            <td style="padding: 12px 8px; font-size: 14px;">${d.partida}</td>
-                            <td style="padding: 12px 8px; font-size: 14px;">${d.destino}</td>
+                            <td style="padding: 12px 8px; font-size: 14px; font-weight: bold;">${esc(d.horario)}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${esc(d.solicitante)}<br><span style="font-size: 12px; color: #6b7280;">${esc(d.setor)}</span></td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${esc(d.partida)}</td>
+                            <td style="padding: 12px 8px; font-size: 14px;">${esc(d.destino)}</td>
                             <td style="padding: 12px 8px; font-size: 14px; font-weight: 500;">${d.nomeMotorista || '-'}</td>
                             <td style="padding: 12px 8px; font-size: 14px;">${d.placaVeiculo || '-'}</td>
                             <td style="padding: 12px 8px; font-size: 14px;">${d.numeroSei || '-'}</td>
@@ -2270,7 +3212,7 @@
                 }
                 
                 const dataAtual = new Date(anoAtual, mesAtual, dia);
-                const dataString = dataAtual.toISOString().split('T')[0];
+                const dataString = dataLocalStr(dataAtual);
                 const demandasDoDia = demandas.filter(d => d.dataDemanda === dataString).sort((a, b) => a.horario.localeCompare(b.horario));
                 
                 let demandasHtml = '';
@@ -2280,9 +3222,9 @@
                     
                     demandasHtml += `
                         <div style="font-size: 10px; margin-top: 4px; padding: 4px; background-color: ${bgColor}; border-left: 3px solid ${borderColor}; border-radius: 3px; overflow: hidden; line-height: 1.3; break-inside: avoid;">
-                            <div style="font-weight: bold; color: #111827;">${d.horario} - ${d.solicitante}</div>
-                            <div style="color: #4b5563;">Dest: ${d.destino}</div>
-                            ${d.nomeMotorista ? `<div style="color: #4b5563; font-style: italic;">Mot: ${d.nomeMotorista}</div>` : ''}
+                            <div style="font-weight: bold; color: #111827;">${esc(d.horario)} - ${esc(d.solicitante)}</div>
+                            <div style="color: #4b5563;">Dest: ${esc(d.destino)}</div>
+                            ${d.nomeMotorista ? `<div style="color: #4b5563; font-style: italic;">Mot: ${esc(d.nomeMotorista)}</div>` : ''}
                         </div>
                     `;
                 });
@@ -2441,10 +3383,12 @@
             }
         }
 
+        let unsubAuditoria = null;
         function carregarAuditoria() {
             if(nivelAcesso !== 'admin') return;
+            if (unsubAuditoria) { unsubAuditoria(); unsubAuditoria = null; }
 
-            db.collection('auditoria_visitantes').orderBy('dataInicio', 'desc').limit(50)
+            unsubAuditoria = db.collection('auditoria_visitantes').orderBy('dataInicio', 'desc').limit(50)
                 .onSnapshot((querySnapshot) => {
                     const tbody = document.getElementById('tabelaAuditoria');
                     
@@ -2460,7 +3404,7 @@
                         const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR');
                         const nomeVisitor = data.nome || 'Visitante Anônimo';
                         
-                        const historicoHtml = data.historico.map(h => `<div class="text-[11px] font-medium text-gray-700 bg-gray-200/60 rounded px-2 py-1 mb-1 shadow-sm">${h}</div>`).join('');
+                        const historicoHtml = data.historico.map(h => `<div class="text-[11px] font-medium text-gray-700 bg-gray-200/60 rounded px-2 py-1 mb-1 shadow-sm">${esc(h)}</div>`).join('');
 
                         html += `
                             <tr class="hover:bg-gray-50 transition-colors">
@@ -2468,16 +3412,16 @@
                                 <td class="px-5 py-4 border-b">
                                     <div class="font-bold text-gray-900 flex items-center">
                                         <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                                        ${nomeVisitor}
+                                        ${esc(nomeVisitor)}
                                     </div>
-                                    <div class="text-xs text-blue-600 font-mono mt-1 tracking-wider">${data.ip}</div>
+                                    <div class="text-xs text-blue-600 font-mono mt-1 tracking-wider">${esc(data.ip)}</div>
                                 </td>
                                 <td class="px-5 py-4 border-b text-sm text-gray-700">
                                     <div class="font-bold text-gray-800 flex items-center">
                                         <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7V7h10v6z"/></svg>
-                                        ${data.dispositivo}
+                                        ${esc(data.dispositivo)}
                                     </div>
-                                    <div class="text-[10px] text-gray-400 mt-1 truncate max-w-[200px]" title="${data.userAgent}">${data.userAgent}</div>
+                                    <div class="text-[10px] text-gray-400 mt-1 truncate max-w-[200px]" title="${esc(data.userAgent)}">${esc(data.userAgent)}</div>
                                 </td>
                                 <td class="px-5 py-4 border-b">
                                     <div class="max-h-28 overflow-y-auto pr-2 space-y-1 scrollbar-thin scrollbar-thumb-gray-300">
@@ -2499,7 +3443,7 @@
             const senha = document.getElementById('loginSenha').value;
 
             if (!usuario) {
-                alert("Por favor, selecione um usuário.");
+                mostrarMensagem("Por favor, selecione um usuário.", "error");
                 return;
             }
 
@@ -2514,7 +3458,7 @@
                 usuarioLogado = usuario;
                 iniciarSistema();
             } else {
-                alert('Senha incorreta para ' + usuario + '!');
+                mostrarMensagem('Senha incorreta para ' + usuario + '!', "error");
             }
         }
 
@@ -2546,11 +3490,15 @@
             if(mainApp) mainApp.style.display = 'block';
 
             const tabAuditoria = document.getElementById('tab-auditoria');
+            const tabFerias = document.getElementById('tab-ferias'); // Elemento Férias
+            
             if (nivelAcesso === 'admin' && (usuarioLogado === 'WELLIGTON' || usuarioLogado === 'MARCIO DAVID' || usuarioLogado === 'JOYCE')) {
-                // Apenas Administradores têm o botão de auditoria ativado
+                // Apenas Administradores têm o botão de auditoria e férias ativado
                 if(tabAuditoria) tabAuditoria.style.display = 'inline-flex';
+                if(tabFerias) tabFerias.style.display = 'inline-flex';
             } else {
                 if(tabAuditoria) tabAuditoria.style.display = 'none';
+                if(tabFerias) tabFerias.style.display = 'none';
             }
 
             if (nivelAcesso === 'visitante') {
@@ -2558,11 +3506,66 @@
             }
         }
 
+        function sairSistema() {
+            // Registra a saída na auditoria se for visitante
+            if (nivelAcesso === 'visitante' && sessaoVisitanteId) {
+                const registro = `[${new Date().toLocaleTimeString('pt-BR')}] Sessão encerrada`;
+                db.collection('auditoria_visitantes').doc(sessaoVisitanteId).update({
+                    historico: firebase.firestore.FieldValue.arrayUnion(registro)
+                }).catch(e => console.error("Erro ao registrar logoff", e));
+            }
+
+            if (unsubAuditoria) { unsubAuditoria(); unsubAuditoria = null; }
+
+            // Limpa as variáveis de sessão
+            usuarioLogado = '';
+            nivelAcesso = null;
+            sessaoVisitanteId = null;
+            window.historicoPendente = [];
+
+            // Limpa os inputs da tela de login
+            document.getElementById('loginUsuario').value = '';
+            document.getElementById('loginSenha').value = '';
+            document.getElementById('nomeVisitante').value = '';
+
+            // Restaura as abas que haviam sido ocultadas para visitantes
+            const tabCadastro = document.getElementById('tab-cadastro');
+            const tabMotoristas = document.getElementById('tab-motoristas');
+            const tabAuditoria = document.getElementById('tab-auditoria');
+            const tabFerias = document.getElementById('tab-ferias');
+            if(tabCadastro) tabCadastro.style.display = '';
+            if(tabMotoristas) tabMotoristas.style.display = '';
+            if(tabAuditoria) tabAuditoria.style.display = 'none';
+            if(tabFerias) tabFerias.style.display = 'none';
+
+            // Remove a badge visual de visitante do cabeçalho
+            const tagVisitante = document.getElementById('tagVisitante');
+            if (tagVisitante) tagVisitante.remove();
+
+            // Esconde o app e mostra a tela de login
+            document.getElementById('sistemaPrincipal').style.display = 'none';
+            document.getElementById('telaLogin').style.display = 'flex';
+            
+            // Retorna visualmente para a Dashboard (para o próximo login carregar limpo)
+            showTab('dashboard');
+
+            // Re-renderiza os dados limpos das permissões restritas
+            updateDashboard();
+            updateTimeline();
+            updateEscala();
+            updateCalendario();
+            updateCalendarioFerias();
+
+            mostrarMensagem('Sessão encerrada com sucesso.', 'success');
+        }
+
         function aplicarRestricoesVisitante() {
             const tabCadastro = document.getElementById('tab-cadastro');
             const tabMotoristas = document.getElementById('tab-motoristas');
+            const tabFerias = document.getElementById('tab-ferias');
             if(tabCadastro) tabCadastro.style.display = 'none';
             if(tabMotoristas) tabMotoristas.style.display = 'none';
+            if(tabFerias) tabFerias.style.display = 'none'; // Segurança dupla
 
             const selectsStatus = document.querySelectorAll('select[onchange*="alterarStatus"]');
             selectsStatus.forEach(select => {
@@ -2588,6 +3591,49 @@
         const mainElement = document.querySelector('main');
         if (mainElement) {
             observerAcesso.observe(mainElement, { childList: true, subtree: true });
+        }
+    </script>
+    <script>
+        // ===== PWA: service worker e botão "Instalar app" =====
+        let eventoInstalacao = null;
+        const jaInstalado = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const ehIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+        function mostrarBotaoInstalar(mostrar) {
+            const b = document.getElementById('btnInstalarApp');
+            if (b) b.style.display = mostrar ? 'inline-flex' : 'none';
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            eventoInstalacao = e;
+            if (!jaInstalado()) mostrarBotaoInstalar(true);
+        });
+
+        window.addEventListener('appinstalled', () => {
+            eventoInstalacao = null;
+            mostrarBotaoInstalar(false);
+            mostrarMensagem('App instalado com sucesso!', 'success');
+        });
+
+        // iOS/Safari não dispara o evento acima: mostra o botão com a instrução manual
+        if (ehIOS && !jaInstalado()) mostrarBotaoInstalar(true);
+
+        async function instalarApp() {
+            if (eventoInstalacao) {
+                eventoInstalacao.prompt();
+                await eventoInstalacao.userChoice;
+                eventoInstalacao = null;
+                mostrarBotaoInstalar(false);
+            } else if (ehIOS) {
+                mostrarMensagem('No iPhone/iPad: toque em Compartilhar e depois em "Adicionar à Tela de Início".', 'success');
+            }
+        }
+
+        if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker não registrado:', err));
+            });
         }
     </script>
 </body>
